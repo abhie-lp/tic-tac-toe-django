@@ -1,5 +1,10 @@
-from django.forms import ModelForm, CharField, PasswordInput
+from django.forms import Form, ModelForm, CharField, PasswordInput
 from django.contrib.auth import get_user_model
+
+
+class LoginForm(Form):
+    username = CharField(max_length=32)
+    password = CharField(widget=PasswordInput(), max_length=64)
 
 
 class RegisterForm(ModelForm):
