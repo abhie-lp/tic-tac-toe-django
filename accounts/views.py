@@ -2,7 +2,6 @@ from typing import Optional
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
-from django.contrib.auth.decorators import login_required
 
 from .models import CustomUser
 from .forms import RegisterForm, LoginForm

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Tic-Tac-Toe</title>
+
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@materializecss/materialize@1.1.0-alpha/dist/css/materialize.min.css" />
+    <style>
+        .board-row {
+            clear: both;
+            display: table;
+        }
+
+        .square {
+            background: #fff;
+            border: 1px solid #999;
+            float: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col s12 m8 offset-m2 l7 offset-l3" style="margin-top: 10%">
+                <div class="card blue lighten-5" style="height: 365px">
+                    <div class="card-content">
+                        <span class="card-title" style="font-weight: bold">
+                            Tic-Tac-Toe
+                        </span>
+                        {% for row in request.user.game.board %}
+                            <div class="board-row">
+                                {% for col in row %}
+                                    <button class="square"></button>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/@materializecss/materialize@1.1.0-alpha/dist/js/materialize.min.js"></script>
+</body>
+</html>

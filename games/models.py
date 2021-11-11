@@ -1,3 +1,23 @@
-from django.db import models
+from django.db.models import Model, OneToOneField, CharField, CASCADE, \
+    DateTimeField
+from django.contrib.postgres.fields import ArrayField
+from django.contrib.auth import get_user_model
 
-# Create your models here.
+
+def default_board() -> list:
+    """Default board for the game"""
+    return [["-", "-", "-"], ["-", "-", "-"], ["-", "-", "-"]]
+
+
+class Game(Model):
+    user = OneToOneField(get_user_model(),
+                         on_delete=CASCADE,
+                         related_name="game")
+    symbol = CharField(max_length=1, default="X")
+    board = ArrayField(ArrayField(CharField(max_length=1)),
+                       default=default_board)
+    created = DateTimeField(auto_now_add=True)
+    updated = DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.user.username
