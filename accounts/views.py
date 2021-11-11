@@ -2,6 +2,7 @@ from typing import Optional
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
+from django.contrib.auth.decorators import login_required
 
 from .models import CustomUser
 from .forms import RegisterForm, LoginForm
@@ -18,6 +19,8 @@ def login_view(request):
             )
             if auth_user and auth_user.is_active:
                 login(request, auth_user)
+                if request.GET.get("next"):
+                    return redirect(request.GET["next"])
                 return redirect("/")
             form.add_error(None, "Username or Password is invalid")
     return render(request, "accounts/login.html", {"form": form})
