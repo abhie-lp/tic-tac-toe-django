@@ -55,7 +55,16 @@
                     {% for row in request.user.game.board %}
                         <div class="board-row">
                             {% for col in row %}
-                                <button class="square white"></button>
+                                <form
+                                    hx-post="{% url 'make_move' %}"
+                                    hx-target="this"
+                                    hx-swap="outerHTML"
+                                    style="display: inline"
+                                >
+                                    <input type="hidden" name="row" value="{{ forloop.parentloop.counter0 }}" />
+                                    <input type="hidden" name="col" value="{{ forloop.counter0 }}" />
+                                    <button class="square white"></button>
+                                </form>
                             {% endfor %}
                         </div>
                     {% endfor %}
