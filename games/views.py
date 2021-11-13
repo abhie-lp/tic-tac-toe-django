@@ -1,7 +1,7 @@
 from operator import itemgetter
 
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -40,3 +40,9 @@ def make_a_move_view(request):
     return HttpResponse(
         f"<button class='square white'>{game.symbol}</button>"
     )
+
+
+@login_required()
+def reset_game_view(request):
+    request.user.game.reset_game()
+    return redirect("game_page")

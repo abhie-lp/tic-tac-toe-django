@@ -21,3 +21,9 @@ class Game(Model):
 
     def __str__(self):
         return self.user.username
+
+    def reset_game(self):
+        """Reset the board to default state"""
+        self.board = default_board()
+        self.symbol = "X"
+        self.save()
