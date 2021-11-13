@@ -63,7 +63,9 @@
                                 >
                                     <input type="hidden" name="row" value="{{ forloop.parentloop.counter0 }}" />
                                     <input type="hidden" name="col" value="{{ forloop.counter0 }}" />
-                                    <button class="square white"></button>
+                                    <button
+                                        class="square white"
+                                    ></button>
                                 </form>
                             {% endfor %}
                         </div>
@@ -74,6 +76,7 @@
                         <div class="status">
                             Your chosen symbol is <span id="chosen-symbol">{{ request.user.game.symbol }}</span>. &nbsp;
                             <button
+                                id="changeSymbolBtn"
                                 class="waves-effect waves-light btn-small"
                                 hx-get="{% url 'change_symbol' %}"
                                 hx-target="#chosen-symbol"
@@ -95,5 +98,17 @@
 
 <!-- Compiled and minified JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/@materializecss/materialize@1.1.0-alpha/dist/js/materialize.min.js"></script>
+<script>
+    (() => {
+        let gameNotStarted = true
+        const blocks = document.getElementsByClassName("square")
+        Array.from(blocks).forEach(ele => ele.addEventListener("click", (ele) => {
+            if (gameNotStarted) {
+                document.getElementById("changeSymbolBtn").remove()
+                gameNotStarted = false
+            }
+        }))
+    })()
+</script>
 </body>
 </html>
