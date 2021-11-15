@@ -51,23 +51,34 @@
                         <span class="card-title" style="font-weight: bold">
                             Tic-Tac-Toe
                         </span>
-                    {% for row in request.user.game.board %}
-                        <div class="board-row">
-                            {% for col in row %}
-                                <form
-                                    class="cellBlockForm"
-                                    style="display: inline"
-                                    id="cell-{{ forloop.parentloop.counter0 }}{{ forloop.counter0 }}"
-                                >
-                                    <input type="hidden" name="row" value="{{ forloop.parentloop.counter0 }}" />
-                                    <input type="hidden" name="col" value="{{ forloop.counter0 }}" />
-                                    <button
-                                        class="square white"
-                                    ></button>
-                                </form>
-                            {% endfor %}
-                        </div>
-                    {% endfor %}
+                    {% with game=request.user.game %}
+                        {% for row in game.board %}
+                            <div class="board-row">
+                                {% for col in row %}
+                                    {% if col == '1' %}
+                                        <button class="square grey lighten-3">{{ game.symbol }}</button>
+                                    {% elif col == '2' %}
+                                        {% if game.symbol == 'X' %}
+                                            <button class="square grey white">O</button>
+                                        {% else %}
+                                            <button class="square grey white">X</button>
+                                        {% endif %}
+                                    {% else %}
+                                        <form
+                                            class="cellBlockForm"
+                                            style="display: inline"
+                                            id="cell-{{ forloop.parentloop.counter0 }}{{ forloop.counter0 }}"
+                                        >
+                                            <input type="hidden" name="row" value="{{ forloop.parentloop.counter0 }}" />
+                                            <input type="hidden" name="col" value="{{ forloop.counter0 }}" />
+                                            <button class="square white"></button>
+                                        </form>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    {% endwith %}
+
                 </div>
                 <div class="card-action">
                     <div class="game-info center" style="font-weight: bold">
@@ -98,6 +109,16 @@
     (() => {
         let gameNotStarted = true
         const blocks = document.getElementsByClassName("square")
+
+        for (let ele of Array.from(blocks)) {
+            const innerText = ele.textContent.trim()
+            if (innerText === 'X' || innerText === 'O') {
+                gameNotStarted = false;
+                document.getElementById("changeSymbolBtn").remove()
+                break
+            }
+        }
+
         Array.from(blocks).forEach(ele => ele.addEventListener("click", (event) => {
             if (gameNotStarted) {
                 document.getElementById("changeSymbolBtn").remove()
@@ -106,9 +127,9 @@
         }))
 
         const comSymbol = player_symbol => player_symbol === 'X' ? 'O' : 'X'
-        const createButtonSymbol = symbol => {
+        const createButtonSymbol = (symbol, player) => {
             const button = document.createElement("button")
-            button.classList.add("square", "white")
+            button.classList.add("square", ...(player === true ? ['grey', 'lighten-3']: ['white']))
             button.textContent = symbol
             return button
         }
@@ -127,7 +148,7 @@
             )
                 .then(res => res.json())
                 .then(json => {
-                    event.target.replaceWith(createButtonSymbol(json['player']))
+                    event.target.replaceWith(createButtonSymbol(json['player'], true))
                      if (json["com_position"] !== null) {
                          const com = json['com_position']
                          console.log(com)
@@ -139,14 +160,17 @@
         }))
 
         const changeSymbolBtn = document.getElementById('changeSymbolBtn')
-        changeSymbolBtn.addEventListener("click", () => {
-            fetch('{% url 'change_symbol' %}')
-                .then(res => res.text())
-                .then(text => {
-                    const span = document.getElementById("chosen-symbol")
-                    span.textContent = text
-                })
-        })
+        if (changeSymbolBtn !== undefined && changeSymbolBtn !== null) {
+            changeSymbolBtn.addEventListener("click", () => {
+                fetch('{% url 'change_symbol' %}')
+                    .then(res => res.text())
+                    .then(text => {
+                        const span = document.getElementById("chosen-symbol")
+                        span.textContent = text
+                    })
+            })
+        }
+
     })()
 </script>
 </body>
