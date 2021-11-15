@@ -4,6 +4,10 @@ from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth import get_user_model
 
 
+PLAYER_MOVE = 1
+COMPUTER_MOVE = 2
+
+
 def default_board() -> list:
     """Default board for the game"""
     return [["-", "-", "-"], ["-", "-", "-"], ["-", "-", "-"]]
