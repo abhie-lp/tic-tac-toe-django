@@ -1,4 +1,5 @@
 from operator import itemgetter
+from typing import Optional
 
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
@@ -7,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from .models import PLAYER_MOVE
-from .game import computer_move, Cell
+from .game import computer_move, Cell, check_winner
 
 
 @login_required()
@@ -36,11 +37,17 @@ def make_a_move_view(request):
     row, col = (int(x) for x in itemgetter("row", "col")(request.POST))
     game.board[row][col] = PLAYER_MOVE
     game.save()
-    com_move: Cell = computer_move(game)
-    print("COM", com_move)
+    win_status = check_winner(game)
+    com_move: Optional[Cell] = None
+    if not win_status:
+        com_move = computer_move(game)
+        win_status = check_winner(game)
+
     return JsonResponse({"player": game.symbol,
                          "com_position": com_move._asdict()
-                         if com_move else None})
+                         if com_move else None,
+                         "win_status": win_status.to_json()
+                         if win_status else None})
 
 
 @login_required()
