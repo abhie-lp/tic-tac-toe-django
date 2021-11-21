@@ -4,8 +4,8 @@ from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth import get_user_model
 
 
-PLAYER_MOVE = 1
-COMPUTER_MOVE = 2
+PLAYER_MOVE = '1'
+COMPUTER_MOVE = '2'
 
 
 def default_board() -> list:
@@ -18,8 +18,9 @@ class Game(Model):
                          on_delete=CASCADE,
                          related_name="game")
     symbol = CharField(max_length=1, default="X")
-    board = ArrayField(ArrayField(CharField(max_length=1)),
-                       default=default_board)
+    board = ArrayField(ArrayField(
+        CharField(max_length=1), size=3
+    ), default=default_board, size=3)
     created = DateTimeField(auto_now_add=True)
     updated = DateTimeField(auto_now=True)
 
