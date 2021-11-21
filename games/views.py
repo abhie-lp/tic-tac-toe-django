@@ -7,22 +7,24 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from .models import PLAYER_MOVE
+from .decorators import timeit
+from .models import PLAYER_MOVE, Game
 from .game import computer_move, Cell, check_winner
 
 
+@timeit
 @login_required()
 def change_symbol(request):
-    symbol = request.user.game.symbol
-    if symbol == "X":
-        symbol = "0"
+    game: Game = request.user.game
+    if game.symbol == "X":
+        game.symbol = "0"
     else:
-        symbol = "X"
-    request.user.game.symbol = symbol
-    request.user.game.save()
-    return HttpResponse(symbol)
+        game.symbol = "X"
+    game.save()
+    return HttpResponse(game.symbol)
 
 
+@timeit
 @login_required()
 def game_page(request):
     return render(request, "games/game.html")
@@ -31,6 +33,7 @@ def game_page(request):
 @csrf_exempt
 @require_POST
 @login_required()
+@timeit
 def make_a_move_view(request):
     game = request.user.game
 
@@ -50,6 +53,7 @@ def make_a_move_view(request):
                          if win_status else None})
 
 
+@timeit
 @login_required()
 def reset_game_view(request):
     request.user.game.reset_game()
