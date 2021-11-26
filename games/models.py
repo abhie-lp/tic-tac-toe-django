@@ -39,8 +39,9 @@ class Game(Model):
         Make Player or Computer move and decrement the moves_left if commit
         """
         self.board[cell.row][cell.col] = sign
+        # Decrement sign if move is other than EMPTY_MOVE else increase
+        self.moves_left -= 1 if sign != EMPTY_MOVE else -1
         if commit:
-            self.moves_left -= 1
             self.save()
         return self
 

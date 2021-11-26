@@ -81,24 +81,34 @@ def computer_move(game: Game) -> Optional[Cell]:
     return best_move
 
 
-def check_line(board: List, line_type: Line) -> Optional[GameStatus]:
+def check_row_and_col(board: List) -> Optional[GameStatus]:
     """Check board rows game winner or tie"""
-    no_empty_cell = True
-    for idx, line in enumerate(board):
-        if len(set(line)) == 1 and line[0] != "-":
-            status = GameStatus()
-            setattr(status, line_type, idx)
-            if line[0] == PLAYER_MOVE:
-                status.winner = Winner.PLAYER
-            else:
-                status.winner = Winner.COM
+    for row_idx, row in enumerate(board):
+        if len(set(row)) == 1 and row[0] != '-':
+            status = GameStatus(
+                Winner.PLAYER if row[0] == PLAYER_MOVE else Winner.COM
+            )
+            status.row = row_idx
             return status
+
+    no_empty_cell = True
+    # Check for col
+    transpose_board = [[row[i] for row in board] for i in range(len(board[0]))]
+    for col_idx, col in enumerate(transpose_board):
+        if len(set(col)) == 1 and col[0] != "-":
+            status = GameStatus(
+                Winner.PLAYER if col[0] == PLAYER_MOVE else Winner.COM
+            )
+            status.col = col_idx
+            return status
+        # Check if any value in col is -
         if no_empty_cell:
-            for cell in line:
-                if cell == "-":
-                    no_empty_cell = False
+            if '-' in col:
+                no_empty_cell = False
+
+    # If there are no empty cells return Result as draw
     if no_empty_cell:
-        return GameStatus(winner=Winner.TIE)
+        return GameStatus(Winner.TIE)
     return None
 
 
@@ -131,16 +141,11 @@ def check_diagonal(board: List) -> Optional[GameStatus]:
 
 
 def check_winner(game: Game) -> Optional[GameStatus]:
-    win_by_row = check_line(game.board, "row")
-    if win_by_row:
-        return win_by_row
-
-    win_by_col = check_line([[row[i] for row in game.board]
-                             for i in range(len(game.board[0]))], "col")
-    if win_by_col:
-        return win_by_col
-
-    win_by_diagonal = check_diagonal(game.board)
-    if win_by_diagonal:
-        return win_by_diagonal
+    if game.moves_left < 5:
+        result: GameStatus = check_row_and_col(game.board)
+        if result:
+            return result
+        result: GameStatus = check_diagonal(game.board)
+        if result:
+            return result
     return None
