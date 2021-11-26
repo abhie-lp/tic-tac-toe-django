@@ -18,16 +18,17 @@ class Winner(Enum):
     NONE = None
     PLAYER = "P"
     COM = "C"
+    TIE = "T"
 
 
 class GameStatus:
     __slots__ = ("row", "col", "diagonal", "winner")
 
-    def __init__(self):
+    def __init__(self, winner: Winner = Winner.NONE):
         self.row: Optional[int] = None
         self.col: Optional[int] = None
         self.diagonal: Diagonal = Diagonal.NONE
-        self.winner: Winner = Winner.NONE
+        self.winner: Winner = winner
 
     def to_json(self):
         return {"row": self.row, "col": self.col,
@@ -52,6 +53,7 @@ def computer_move(game: Game) -> Optional[Cell]:
 
 def check_line(board: List, line_type: Line) -> Optional[GameStatus]:
     """Check board rows game winner or tie"""
+    no_empty_cell = True
     for idx, line in enumerate(board):
         if len(set(line)) == 1 and line[0] != "-":
             status = GameStatus()
@@ -61,6 +63,12 @@ def check_line(board: List, line_type: Line) -> Optional[GameStatus]:
             else:
                 status.winner = Winner.COM
             return status
+        if no_empty_cell:
+            for cell in line:
+                if cell == "-":
+                    no_empty_cell = False
+    if no_empty_cell:
+        return GameStatus(winner=Winner.TIE)
     return None
 
 
