@@ -43,135 +43,143 @@
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="row">
-        <div class="col s12 m8 offset-m2 l7 offset-l3" style="margin-top: 10%">
-            <div class="card blue lighten-5" style="height: 500px; width: 410px">
-                <div class="card-content">
-                        <span class="card-title" style="font-weight: bold">
-                            Tic-Tac-Toe
-                        </span>
-                    {% with game=request.user.game %}
-                        {% for row in game.board %}
-                            <div class="board-row">
-                                {% for col in row %}
-                                    {% if col == '1' %}
-                                        <button class="square grey lighten-3">{{ game.symbol }}</button>
-                                    {% elif col == '2' %}
-                                        {% if game.symbol == 'X' %}
-                                            <button class="square grey white">O</button>
+    <div class="container">
+        <div class="row">
+            <div class="col s12 m8 offset-m2 l7 offset-l3" style="margin-top: 10%">
+                {% with game=request.user.game %}
+                    <div class="card blue lighten-5" style="height: 500px; width: 410px">
+                        <div class="card-content">
+                                    <span class="card-title" style="font-weight: bold">
+                                        Tic-Tac-Toe
+                                    </span>
+                            {% for row in game.board %}
+                                <div class="board-row">
+                                    {% for col in row %}
+                                        {% if col == '1' %}
+                                            <button class="square grey lighten-3">{{ game.symbol }}</button>
+                                        {% elif col == '2' %}
+                                            {% if game.symbol == 'X' %}
+                                                <button class="square grey white">O</button>
+                                            {% else %}
+                                                <button class="square grey white">X</button>
+                                            {% endif %}
                                         {% else %}
-                                            <button class="square grey white">X</button>
+                                            <form
+                                                    class="cellBlockForm"
+                                                    style="display: inline"
+                                                    id="cell-{{ forloop.parentloop.counter0 }}{{ forloop.counter0 }}"
+                                            >
+                                                <input type="hidden" name="row" value="{{ forloop.parentloop.counter0 }}"/>
+                                                <input type="hidden" name="col" value="{{ forloop.counter0 }}"/>
+                                                <button class="square white"></button>
+                                            </form>
                                         {% endif %}
-                                    {% else %}
-                                        <form
-                                            class="cellBlockForm"
-                                            style="display: inline"
-                                            id="cell-{{ forloop.parentloop.counter0 }}{{ forloop.counter0 }}"
-                                        >
-                                            <input type="hidden" name="row" value="{{ forloop.parentloop.counter0 }}" />
-                                            <input type="hidden" name="col" value="{{ forloop.counter0 }}" />
-                                            <button class="square white"></button>
-                                        </form>
-                                    {% endif %}
-                                {% endfor %}
-                            </div>
-                        {% endfor %}
-                    {% endwith %}
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
 
-                </div>
-                <div class="card-action">
-                    <div class="game-info center" style="font-weight: bold">
-                        <div class="status">
-                            Your chosen symbol is <span id="chosen-symbol">{{ request.user.game.symbol }}</span>. &nbsp;
-                            <button
-                                id="changeSymbolBtn"
-                                class="waves-effect waves-light btn-small"
-                            >
-                                Change
-                            </button>
+                        </div>
+                        <div class="card-action">
+                            <div class="game-info center" style="font-weight: bold">
+                                <div class="status">
+                                    Your chosen symbol is <span id="chosen-symbol">{{ game.symbol }}</span>. &nbsp;
+                                    <button
+                                            id="changeSymbolBtn"
+                                            class="waves-effect waves-light btn-small"
+                                    >
+                                        Change
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="center">
+                                <a class="red btn-small waves-effect waves-red" href="{% url 'reset_game' %}">
+                                    RESET
+                                </a>
+                            </div>
                         </div>
                     </div>
-                    <div class="center">
-                        <a class="red btn-small waves-effect waves-red" href="{% url 'reset_game' %}">
-                            RESET
-                        </a>
-                    </div>
-                </div>
+                {% endwith %}
             </div>
         </div>
     </div>
-</div>
 
-<!-- Compiled and minified JavaScript -->
-<script src="https://cdn.jsdelivr.net/npm/@materializecss/materialize@1.1.0-alpha/dist/js/materialize.min.js"></script>
-<script>
-    (() => {
-        let gameNotStarted = true
-        const blocks = document.getElementsByClassName("square")
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/@materializecss/materialize@1.1.0-alpha/dist/js/materialize.min.js"></script>
+    <script>
+        (() => {
+            let gameNotStarted = true
+            const blocks = document.getElementsByClassName("square")
+            let blockRequest = false;
 
-        for (let ele of Array.from(blocks)) {
-            const innerText = ele.textContent.trim()
-            if (innerText === 'X' || innerText === 'O') {
-                gameNotStarted = false;
-                document.getElementById("changeSymbolBtn").remove()
-                break
-            }
-        }
-
-        Array.from(blocks).forEach(ele => ele.addEventListener("click", (event) => {
-            if (gameNotStarted) {
-                document.getElementById("changeSymbolBtn").remove()
-                gameNotStarted = false
-            }
-        }))
-
-        const comSymbol = player_symbol => player_symbol === 'X' ? 'O' : 'X'
-        const createButtonSymbol = (symbol, player) => {
-            const button = document.createElement("button")
-            button.classList.add("square", ...(player === true ? ['grey', 'lighten-3']: ['white']))
-            button.textContent = symbol
-            return button
-        }
-
-
-        const forms = document.getElementsByClassName("cellBlockForm")
-        Array.from(forms).forEach(form => form.addEventListener("submit", (event) => {
-            event.preventDefault();
-            const formData = new FormData(event.target)
-            fetch(
-                "{% url 'make_move' %}",
-                {
-                    method: "post",
-                    body: formData
+            for (let ele of Array.from(blocks)) {
+                const innerText = ele.textContent.trim()
+                if (innerText === 'X' || innerText === 'O') {
+                    gameNotStarted = false;
+                    document.getElementById("changeSymbolBtn").remove()
+                    break
                 }
-            )
-                .then(res => res.json())
-                .then(json => {
-                    event.target.replaceWith(createButtonSymbol(json['player'], true))
-                     if (json["com_position"] !== null) {
-                         const com = json['com_position']
-                         console.log(com)
-                         document.getElementById(`cell-${com['row']}${com['col']}`).replaceWith(
-                             createButtonSymbol(comSymbol(json['player']))
-                         )
-                     }
+            }
+
+            Array.from(blocks).forEach(ele => ele.addEventListener("click", (event) => {
+                if (gameNotStarted) {
+                    document.getElementById("changeSymbolBtn").remove()
+                    gameNotStarted = false
+                }
+            }))
+
+            const comSymbol = player_symbol => player_symbol === 'X' ? 'O' : 'X'
+            const createButtonSymbol = (symbol, player) => {
+                const button = document.createElement("button")
+                button.classList.add("square", ...(player === true ? ['grey', 'lighten-3'] : ['white']))
+                button.textContent = symbol
+                return button
+            }
+
+
+            const forms = document.getElementsByClassName("cellBlockForm")
+            Array.from(forms).forEach(form => form.addEventListener("submit", (event) => {
+                event.preventDefault();
+                if (!blockRequest) {
+                    blockRequest = true;
+                    event.target.replaceWith(
+                    createButtonSymbol(document.getElementById("chosen-symbol").textContent, true)
+                    )
+                    const formData = new FormData(event.target)
+                    fetch(
+                        "{% url 'make_move' %}",
+                        {
+                            method: "post",
+                            body: formData
+                        }
+                    )
+                        .then(res => res.json())
+                        .then(json => {
+                            if (json["com_position"] !== null) {
+                                const com = json['com_position']
+                                console.log(com)
+                                document.getElementById(`cell-${com['row']}${com['col']}`).replaceWith(
+                                    createButtonSymbol(comSymbol(json['player']))
+                                )
+                            }
+                            blockRequest = false
+                        })
+                }
+
+            }))
+
+            const changeSymbolBtn = document.getElementById('changeSymbolBtn')
+            if (changeSymbolBtn !== undefined && changeSymbolBtn !== null) {
+                changeSymbolBtn.addEventListener("click", () => {
+                    fetch('{% url 'change_symbol' %}')
+                        .then(res => res.text())
+                        .then(text => {
+                            const span = document.getElementById("chosen-symbol")
+                            span.textContent = text
+                        })
                 })
-        }))
+            }
 
-        const changeSymbolBtn = document.getElementById('changeSymbolBtn')
-        if (changeSymbolBtn !== undefined && changeSymbolBtn !== null) {
-            changeSymbolBtn.addEventListener("click", () => {
-                fetch('{% url 'change_symbol' %}')
-                    .then(res => res.text())
-                    .then(text => {
-                        const span = document.getElementById("chosen-symbol")
-                        span.textContent = text
-                    })
-            })
-        }
-
-    })()
-</script>
+        })()
+    </script>
 </body>
 </html>
