@@ -8,9 +8,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from .decorators import timeit
-from .models import PLAYER_MOVE, Game
-from .game import computer_move, Cell, check_winner
-
+from .models import PLAYER_MOVE, Cell, Game
+from .game import computer_move, check_winner
 
 @timeit
 @login_required()
@@ -35,14 +34,13 @@ def game_page(request):
 @login_required()
 @timeit
 def make_a_move_view(request):
-    game = request.user.game
+    game: Game = request.user.game
 
     row, col = (int(x) for x in itemgetter("row", "col")(request.POST))
-    game.board[row][col] = PLAYER_MOVE
-    game.save()
+    game = game.make_a_move(Cell(row, col), PLAYER_MOVE)
     win_status = check_winner(game)
     com_move: Optional[Cell] = None
-    if not win_status:
+    if not win_status and game.moves_left > 0:
         com_move = computer_move(game)
         win_status = check_winner(game)
 

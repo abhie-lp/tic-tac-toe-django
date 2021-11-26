@@ -1,10 +1,10 @@
-from collections import namedtuple
 from enum import Enum
+from random import choice
 from typing import Optional, List, Literal
 
-from .models import Game, COMPUTER_MOVE, PLAYER_MOVE
+from .models import Cell, Game, COMPUTER_MOVE, PLAYER_MOVE, EMPTY_MOVE
 
-Cell = namedtuple("Cell", "row col")
+
 Line = Literal["row", "col"]
 
 
@@ -41,14 +41,44 @@ class GameStatus:
                f'winner={self.winner}>'
 
 
+def minimax(game: Game, sign: str, is_maximizing: bool) -> int:
+    """Player is maximizing and CPU is minimizing"""
+    result: GameStatus = check_winner(game)
+    if result:
+        if result.winner == Winner.TIE:
+            return 0
+        return 1 if result.winner == Winner.PLAYER else -1
+    scores = []
+    for cell in game.remaining_moves():
+        game = game.make_a_move(cell, sign, commit=False)
+        scores.append(minimax(
+            game,
+            PLAYER_MOVE if sign == COMPUTER_MOVE else COMPUTER_MOVE,
+            not is_maximizing
+        ))
+        game.make_a_move(cell, EMPTY_MOVE, commit=False)
+    return max(scores) if is_maximizing else min(scores)
+
+
 def computer_move(game: Game) -> Optional[Cell]:
     """Make a computer move"""
-    for row_idx, row in enumerate(game.board):
-        for col_idx, col in enumerate(row):
-            if col == "-":
-                game.board[row_idx][col_idx] = COMPUTER_MOVE
-                game.save()
-                return Cell(row_idx, col_idx)
+    cell: Cell
+    best_move: Cell
+    if game.moves_left == 9:
+        cell = Cell(choice((1, 2, 3)), choice((1, 2, 3)))
+        game.make_a_move(cell.row, cell.col, COMPUTER_MOVE)
+        return cell
+
+    best_score, best_move = float("inf"), Cell(0, 0)
+    for cell in game.remaining_moves():
+        game: Game = game.make_a_move(cell, COMPUTER_MOVE, commit=False)
+        score = minimax(game, PLAYER_MOVE, True)
+        game.make_a_move(cell, EMPTY_MOVE, commit=False)
+        if score < best_score:
+            best_score = score
+            best_move = cell
+    game.make_a_move(best_move, COMPUTER_MOVE)
+    return best_move
 
 
 def check_line(board: List, line_type: Line) -> Optional[GameStatus]:
@@ -72,30 +102,31 @@ def check_line(board: List, line_type: Line) -> Optional[GameStatus]:
     return None
 
 
+def _diagonal_winner(values: tuple) -> Optional[GameStatus]:
+    if len(set(values)) == 1 and values[0] != '-':
+        status = GameStatus(
+            Winner.PLAYER if values[0] == PLAYER_MOVE else Winner.COM
+        )
+        status.diagonal = Diagonal.FORWARD
+        return status
+    return None
+
+
 def check_diagonal(board: List) -> Optional[GameStatus]:
     """Check diagonals for the winner or tie"""
-    # Get the backward diagonal
-    diagonal_bwd = tuple(board[i][i] for i in range(len(board[0])))
     # Get the forward diagonal
     diagonal_fwd = tuple(board[len(board[0]) - 1 - i][i]
                          for i in range(len(board[0]) - 1, -1, -1))
+    result: GameStatus = _diagonal_winner(diagonal_fwd)
 
-    if len(set(diagonal_fwd)) == 1 and diagonal_fwd[0] != '-':
-        status = GameStatus()
-        status.diagonal = Diagonal.FORWARD
-        if diagonal_fwd[0] == PLAYER_MOVE:
-            status.winner = Winner.PLAYER
-        else:
-            status.winner = Winner.COM
-        return status
-    elif len(set(diagonal_bwd)) == 1 and diagonal_bwd[0] != '-':
-        status = GameStatus()
-        status.diagonal = Diagonal.BACKWARD
-        if diagonal_bwd[0] == PLAYER_MOVE:
-            status.winner = Winner.PLAYER
-        else:
-            status.winner = Winner.COM
-        return status
+    if result:
+        return result
+
+    # Get the backward diagonal
+    diagonal_bwd = tuple(board[i][i] for i in range(len(board[0])))
+    result: GameStatus = _diagonal_winner(diagonal_bwd)
+    if result:
+        return result
     return None
 
 
