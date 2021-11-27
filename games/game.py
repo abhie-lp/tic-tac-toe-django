@@ -112,31 +112,32 @@ def check_row_and_col(board: List) -> Optional[GameStatus]:
     return None
 
 
-def _diagonal_winner(values: tuple) -> Optional[GameStatus]:
+def _diagonal_winner(values: tuple) -> bool:
     if len(set(values)) == 1 and values[0] != '-':
-        status = GameStatus(
-            Winner.PLAYER if values[0] == PLAYER_MOVE else Winner.COM
-        )
-        status.diagonal = Diagonal.FORWARD
-        return status
-    return None
+        return True
+    return False
 
 
 def check_diagonal(board: List) -> Optional[GameStatus]:
     """Check diagonals for the winner or tie"""
     # Get the forward diagonal
-    diagonal_fwd = tuple(board[len(board[0]) - 1 - i][i]
-                         for i in range(len(board[0]) - 1, -1, -1))
-    result: GameStatus = _diagonal_winner(diagonal_fwd)
-
-    if result:
-        return result
+    diagonal_fwd = tuple(board[i][i] for i in range(len(board[0])))
+    if _diagonal_winner(diagonal_fwd):
+        status = GameStatus(
+            Winner.PLAYER if diagonal_fwd[0] == PLAYER_MOVE else Winner.COM
+        )
+        status.diagonal = Diagonal.FORWARD
+        return status
 
     # Get the backward diagonal
-    diagonal_bwd = tuple(board[i][i] for i in range(len(board[0])))
-    result: GameStatus = _diagonal_winner(diagonal_bwd)
-    if result:
-        return result
+    diagonal_bwd = tuple(board[len(board[0]) - 1 - i][i]
+                         for i in range(len(board[0]) - 1, -1, -1))
+    if _diagonal_winner(diagonal_bwd):
+        status = GameStatus(
+            Winner.PLAYER if diagonal_bwd[0] == PLAYER_MOVE else Winner.COM
+        )
+        status.diagonal = Diagonal.BACKWARD
+        return status
     return None
 
 
