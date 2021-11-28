@@ -10,6 +10,8 @@
     <!-- Compiled and minified CSS -->
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/@materializecss/materialize@1.1.0-alpha/dist/css/materialize.min.css"/>
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
       .board-row {
         clear: both;
@@ -40,18 +42,37 @@
       .square:hover {
         border: 3px solid #999;
       }
+
+      .sidenav li > span {
+        color: rgba(0,0,0,0.87);
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        height: 48px;
+        line-height: 48px;
+        padding: 0 32px;
+    }
     </style>
   </head>
   <body>
+
     <nav class="blue-grey">
       <div class="nav-wrapper">
-        <a href="#" class="brand-logo">TIC-TAC-TOE</a>
-        <ul id="nav-mobile" class="right hide-on-small-and-down">
-          <li><span style="font-weight: bolder">{{ request.user.username }}</span></li>
-          <li><a href="{% url 'logout' %}" style="font-weight: bolder">Logout</a></li>
+        <a href="#!" class="brand-logo">TIC-TAC-TOE</a>
+        <a href="#" data-target="mobile-demo" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+        <ul class="right hide-on-med-and-down">
+          <li><a href="https://github.com/abhie-lp/tic-tac-toe-django"><i class="material-icons">code</i></a></li>
+          <li><span style="font-weight: bold">{{ request.user.username }}</span></li>
+          <li><a href="{% url 'logout' %}" style="font-weight: bold">Logout</a></li>
         </ul>
       </div>
     </nav>
+
+    <ul class="sidenav" id="mobile-demo">
+      <li class="cyan lighten-4"><a href="https://github.com/abhie-lp/tic-tac-toe-django"><i class="material-icons">code</i></a></li>
+      <li class="cyan lighten-4"><span style="font-weight: bolder">{{ request.user.username }}</span></li>
+      <li class="cyan lighten-4"><a href="{% url 'logout' %}" style="font-weight: bolder">Logout</a></li>
+    </ul>
     <div class="container">
       <div class="row">
         <div class="col s12 m8 offset-m2 l7 offset-l3" style="margin-top: 2%">
@@ -171,6 +192,13 @@
     <script
         src="https://cdn.jsdelivr.net/npm/@materializecss/materialize@1.1.0-alpha/dist/js/materialize.min.js"></script>
     <script>
+
+      document.addEventListener('DOMContentLoaded', function() {
+        const elems = document.querySelectorAll('.sidenav');
+        const instances = M.Sidenav.init(elems);
+      });
+
+
       (() => {
         let gameNotStarted = true
         const blocks = document.getElementsByClassName("square")

@@ -39,7 +39,6 @@ def make_a_move_view(request):
     if game.winner:
         return HttpResponseNotAllowed("Game is already over")
 
-    print("computerFirst" in request.POST)
     if "computerFirst" in request.POST:
         com_move = computer_move(game)
         win_status = None
