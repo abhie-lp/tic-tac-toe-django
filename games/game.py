@@ -47,7 +47,8 @@ def minimax(game: Game, sign: str, is_maximizing: bool) -> int:
     if result:
         if result.winner == Winner.TIE:
             return 0
-        return 1 if result.winner == Winner.PLAYER else -1
+        return (1 if result.winner == Winner.PLAYER else -1) * \
+               (game.moves_left + 1)
     scores = []
     for cell in game.remaining_moves():
         game = game.make_a_move(cell, sign, commit=False)
