@@ -65,6 +65,6 @@ def make_a_move_view(request):
 
 @timeit
 @login_required()
-def reset_game_view(request):
-    request.user.game.reset_game()
+def new_game_view(request):
+    request.user.game.new_game()
     return redirect("game_page")

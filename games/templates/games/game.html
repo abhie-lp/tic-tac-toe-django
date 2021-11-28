@@ -119,23 +119,36 @@
               <div class="card-action">
                 {% if game.moves_left == 9 %}
                   <div class="center" id="computerFirst" style="font-weight: bold; margin-bottom: 5px">
-                    <button class="red btn-small waves-effect waves-red" type="button">Computer First</button>
+                    <button
+                        class="red btn-small waves-effect waves-red"
+                        type="button"
+                        style="font-weight: bold"
+                    >
+                      Computer First
+                    </button>
                   </div>
                 {% endif %}
+
                 <div class="game-info center" style="font-weight: bold; margin-bottom: 5px">
                   <div class="status">
                     Your chosen symbol is <span id="chosen-symbol">{{ game.symbol }}</span>. &nbsp;
                     <button
                         id="changeSymbolBtn"
                         class="waves-effect waves-light btn-small"
+                        style="font-weight: bold"
                     >
                       Change
                     </button>
                   </div>
                 </div>
+
                 <div class="center">
-                  <a class="red btn-small waves-effect waves-orange orange" href="{% url 'reset_game' %}">
-                    RESET
+                  <a
+                      class="red btn-small waves-effect waves-orange orange"
+                      href="{% url 'reset_game' %}"
+                      style="font-weight: bold"
+                  >
+                    NEW GAME
                   </a>
                 </div>
               </div>

@@ -47,10 +47,9 @@ class Game(Model):
             self.save()
         return self
 
-    def reset_game(self):
+    def new_game(self):
         """Reset the board to default state"""
         self.board = default_board()
-        self.symbol = "X"
         self.moves_left = TOTAL_MOVES
         self.winner = None
         self.save()
