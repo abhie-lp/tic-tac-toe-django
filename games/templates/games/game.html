@@ -117,7 +117,12 @@
 
               </div>
               <div class="card-action">
-                <div class="game-info center" style="font-weight: bold">
+                {% if game.moves_left == 9 %}
+                  <div class="center" id="computerFirst" style="font-weight: bold; margin-bottom: 5px">
+                    <button class="red btn-small waves-effect waves-red" type="button">Computer First</button>
+                  </div>
+                {% endif %}
+                <div class="game-info center" style="font-weight: bold; margin-bottom: 5px">
                   <div class="status">
                     Your chosen symbol is <span id="chosen-symbol">{{ game.symbol }}</span>. &nbsp;
                     <button
@@ -129,7 +134,7 @@
                   </div>
                 </div>
                 <div class="center">
-                  <a class="red btn-small waves-effect waves-red" href="{% url 'reset_game' %}">
+                  <a class="red btn-small waves-effect waves-orange orange" href="{% url 'reset_game' %}">
                     RESET
                   </a>
                 </div>
@@ -186,6 +191,72 @@
             playerTurnElement.innerText = playerTurnElement.innerText === "PLAYER" ? "COMPUTER" : "PLAYER"
         )
 
+        const handleMove = (json) => {
+          if (json["com_position"] !== null) {
+            const com = json['com_position']
+            document.getElementById(`cell-${com['row']}${com['col']}`).replaceWith(
+                createButtonSymbol(comSymbol(json['player']))
+            )
+          }
+
+          if (json['win_status'] !== null) {
+            gameOver = true
+            const { row, col, diagonal, winner } = json['win_status']
+            const cellBlocks = document.querySelectorAll(".board-row button")
+            const width = 3
+            const wonCellBlocks = []
+            if (row != null) {
+              // Win by row
+              for (let col of [0, 1, 2]) {
+                wonCellBlocks.push(cellBlocks[width * row + col])
+              }
+            } else if (col != null) {
+              // Win by column
+              for (let row of [0, 1, 2]) {
+                wonCellBlocks.push(cellBlocks[width * row + col])
+              }
+            } else if (diagonal != null) {
+              // Win by diagonal
+              switch (diagonal) {
+                case 'F':
+                  for (let i of [0, 1, 2]) {
+                    wonCellBlocks.push(cellBlocks[width * i + i])
+                  }
+                  break
+                case 'B':
+                  for (let i of [2, 1, 0]) {
+                    wonCellBlocks.push(cellBlocks[width * (width - i - 1) + i])
+                  }
+                  break
+              }
+            }
+            switch (winner) {
+              case Winner.Player:
+                // Player Wins
+                wonCellBlocks.forEach(cell => {
+                  cell.classList.remove("grey")
+                  cell.classList.add("green", "lighten-2")
+                })
+                gameStatusElement.textContent = "PLAYER WINS"
+                break
+              case Winner.Computer:
+                // Computer Wins
+                wonCellBlocks.forEach(cell => {
+                  cell.classList.remove("white")
+                  cell.classList.add("orange", "lighten-2")
+                })
+                gameStatusElement.textContent = "COMPUTER WINS"
+                break
+              case Winner.Tie:
+                gameStatusElement.textContent = "TIE"
+                break
+            }
+            playerTurnElement.textContent = "-"
+          } else {
+            playerTurnElement.textContent = updatePlayerTurn()
+          }
+          blockRequest = false
+        }
 
         const forms = document.getElementsByClassName("cellBlockForm")
         Array.from(forms).forEach(form => form.addEventListener("submit", (event) => {
@@ -207,74 +278,34 @@
             )
                 .then(res => res.json())
                 .then(json => {
-                  if (json["com_position"] !== null) {
-                    const com = json['com_position']
-                    document.getElementById(`cell-${com['row']}${com['col']}`).replaceWith(
-                        createButtonSymbol(comSymbol(json['player']))
-                    )
-                  }
-
-                  if (json['win_status'] !== null) {
-                    gameOver = true
-                    const { row, col, diagonal, winner } = json['win_status']
-                    const cellBlocks = document.querySelectorAll(".board-row button")
-                    const width = 3
-                    const wonCellBlocks = []
-                    if (row != null) {
-                      // Win by row
-                      for (let col of [0, 1, 2]) {
-                        wonCellBlocks.push(cellBlocks[width * row + col])
-                      }
-                    } else if (col != null) {
-                      // Win by column
-                      for (let row of [0, 1, 2]) {
-                        wonCellBlocks.push(cellBlocks[width * row + col])
-                      }
-                    } else if (diagonal != null) {
-                      // Win by diagonal
-                      switch (diagonal) {
-                        case 'F':
-                          for (let i of [0, 1, 2]) {
-                            wonCellBlocks.push(cellBlocks[width * i + i])
-                          }
-                          break
-                        case 'B':
-                          for (let i of [2, 1, 0]) {
-                            wonCellBlocks.push(cellBlocks[width * (width - i - 1) + i])
-                          }
-                          break
-                      }
-                    }
-                    switch (winner) {
-                      case Winner.Player:
-                        // Player Wins
-                        wonCellBlocks.forEach(cell => {
-                          cell.classList.remove("grey")
-                          cell.classList.add("green", "lighten-2")
-                        })
-                        gameStatusElement.textContent = "PLAYER WINS"
-                        break
-                      case Winner.Computer:
-                        // Computer Wins
-                        wonCellBlocks.forEach(cell => {
-                          cell.classList.remove("white")
-                          cell.classList.add("orange", "lighten-2")
-                        })
-                        gameStatusElement.textContent = "COMPUTER WINS"
-                        break
-                      case Winner.Tie:
-                        gameStatusElement.textContent = "TIE"
-                        break
-                    }
-                    playerTurnElement.textContent = "-"
-                  } else {
-                    playerTurnElement.textContent = updatePlayerTurn()
-                  }
-                  blockRequest = false
+                  handleMove(json)
                 })
           }
 
         }))
+
+        // Add event listener to COMPUTER FIRST button
+        document.getElementById("computerFirst").addEventListener("click", (event) => {
+          if (!blockRequest && !gameOver) {
+            blockRequest = true;
+            event.target.remove()
+            playerTurnElement.textContent = updatePlayerTurn()
+
+            const formData = new FormData()
+            formData.set("computerFirst", "1")
+            fetch(
+                "{% url 'make_move' %}",
+                {
+                  method: "post",
+                  body: formData
+                }
+            )
+                .then(res => res.json())
+                .then(json => {
+                  handleMove(json)
+                })
+          }
+        })
 
         const changeSymbolBtn = document.getElementById('changeSymbolBtn')
         if (changeSymbolBtn !== undefined && changeSymbolBtn !== null) {

@@ -65,8 +65,8 @@ def computer_move(game: Game) -> Optional[Cell]:
     cell: Cell
     best_move: Cell
     if game.moves_left == 9:
-        cell = Cell(choice((1, 2, 3)), choice((1, 2, 3)))
-        game.make_a_move(cell.row, cell.col, COMPUTER_MOVE)
+        cell = Cell(choice((0, 1, 2)), choice((0, 1, 2)))
+        game.make_a_move(cell, COMPUTER_MOVE)
         return cell
 
     best_score, best_move = float("inf"), Cell(0, 0)
