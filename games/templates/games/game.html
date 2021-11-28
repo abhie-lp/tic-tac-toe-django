@@ -21,14 +21,15 @@
 
       .square {
         background: #fff;
-        border: 1px solid #999;
+        border: 2px solid #999;
+        border-radius: .3em;
+        box-shadow: 1px 1px 0 0, 2px 2px 0 0, 3px 3px 0 0, 4px 4px 0 0, 5px 5px 0 0;
         float: left;
-        font-size: 24px;
-        font-weight: bold;
+        font-size: 50px;
+        font-weight: bolder;
         line-height: 34px;
         height: 120px;
-        margin-right: -1px;
-        margin-left: -1px;
+        margin: 2px;
         padding: 0;
         text-align: center;
         width: 120px;
@@ -51,7 +52,7 @@
         height: 48px;
         line-height: 48px;
         padding: 0 32px;
-    }
+      }
     </style>
   </head>
   <body>
@@ -77,17 +78,18 @@
       <div class="row">
         <div class="col s12 m8 offset-m2 l7 offset-l3" style="margin-top: 2%">
           {% with game=request.user.game %}
-            <div class="card blue lighten-5" style="height: 500px; width: 410px">
+            <div class="card blue lighten-5" style="height: 500px; width: 420px">
               <div class="card-content">
                 <div class="card-title">
                   <span class="left" style="font-weight: 600">
                     Tic-Tac-Toe
                   </span>
-                  <div class="right" style="width: 150px; font-size: 13px; margin-top: -15px">
-                    <strong style="font-weight: bold">Turn: </strong>
+                  <div class="right"
+                       style="width: 155px; font-size: 13px; margin-top: -15px; font-weight: bold">
+                    <strong>Turn: </strong>
                     <span id="playerTurn">PLAYER</span>
                     <br>
-                    <span style="font-weight: bold">Status: </span>
+                    <span>Status: </span>
                     <span id="gameStatus">
                       {% if game.winner == None %}
                         ONGOING
