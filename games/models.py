@@ -2,13 +2,14 @@ from collections import namedtuple
 from typing import List
 
 from django.db.models import Model, OneToOneField, CharField, CASCADE, \
-    DateTimeField, PositiveSmallIntegerField
+    DateTimeField, PositiveSmallIntegerField, BooleanField
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth import get_user_model
 
 PLAYER_MOVE = '1'
 COMPUTER_MOVE = '2'
 EMPTY_MOVE = '-'
+TOTAL_MOVES = 9
 Cell = namedtuple("Cell", "row col")
 
 
@@ -25,7 +26,8 @@ class Game(Model):
     board = ArrayField(ArrayField(
         CharField(max_length=1), size=3
     ), default=default_board, size=3)
-    moves_left = PositiveSmallIntegerField(default=9)
+    moves_left = PositiveSmallIntegerField(default=TOTAL_MOVES)
+    winner = CharField(max_length=1, null=True, blank=True)
     created = DateTimeField(auto_now_add=True)
     updated = DateTimeField(auto_now=True)
 
@@ -49,7 +51,8 @@ class Game(Model):
         """Reset the board to default state"""
         self.board = default_board()
         self.symbol = "X"
-        self.moves_left = 9
+        self.moves_left = TOTAL_MOVES
+        self.winner = None
         self.save()
 
     def remaining_moves(self) -> List[Cell]:
