@@ -1,46 +1,56 @@
 <!doctype html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Register</title>
+    <title>TIC-TAC-TOE - Register</title>
 
     <!-- Compiled and minified CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@materializecss/materialize@1.1.0-alpha/dist/css/materialize.min.css" />
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/@materializecss/materialize@1.1.0-alpha/dist/css/materialize.min.css"/>
     <style>
-        label {
-            color: black;
-            font-weight: bold;
-            font-size: 16px;
-        }
+      label {
+        color: black;
+        font-weight: bold;
+        font-size: 16px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
+    <nav>
+      <div class="nav-wrapper">
+        <a href="#" class="brand-logo">TIC TAC TOE</a>
+        <ul id="nav-mobile" class="right hide-on-small-and-down">
+          <li><a href="{% url 'login' %}">Login</a></li>
+        </ul>
+      </div>
+    </nav>
     <div class="container">
-        <div class="row">
-            <div class="col s12 m8 offset-m2 l7 offset-l3" style="margin-top: 10%">
-                <div class="card grey lighten-4">
-                    <form method="post">
-                        <div class="card-content">
-                            <span class="card-title" style="font-weight: bold">
-                                Welcome Guest
-                            </span>
-                            <p style="margin-bottom: 10px">Please enter the below form details to create an account</p>
-                                {% csrf_token %}
-                                {{ form.as_p }}
-                        </div>
-                        <div class="card-action">
-                            <button class="btn green" style="width: 100%" type="submit">Register</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+      <div class="row">
+        <div class="col s12 m8 offset-m2 l7 offset-l3" style="margin-top: 2%">
+          <div class="card grey lighten-4">
+            <form method="post">
+              <div class="card-content">
+                <span class="card-title" style="font-weight: bold">
+                    Welcome Guest
+                </span>
+                <p style="margin-bottom: 10px">Please enter the below form details to create an account</p>
+                {% csrf_token %}
+                {{ form.as_p }}
+              </div>
+              <div class="card-action">
+                <button class="btn green" style="width: 100%" type="submit">Register</button>
+              </div>
+            </form>
+          </div>
         </div>
+      </div>
     </div>
 
     <!-- Compiled and minified JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/@materializecss/materialize@1.1.0-alpha/dist/js/materialize.min.js"></script>
-</body>
+    <script
+        src="https://cdn.jsdelivr.net/npm/@materializecss/materialize@1.1.0-alpha/dist/js/materialize.min.js"></script>
+  </body>
 </html>
