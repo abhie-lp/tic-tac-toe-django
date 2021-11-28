@@ -1,7 +1,7 @@
 from operator import itemgetter
 from typing import Optional
 
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseNotAllowed
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
@@ -36,13 +36,21 @@ def game_page(request):
 def make_a_move_view(request):
     game: Game = request.user.game
 
-    row, col = (int(x) for x in itemgetter("row", "col")(request.POST))
+    # If game is already over then return response
+    if game.winner:
+        return HttpResponseNotAllowed("Game is already over")
+
+    row, col = int(request.POST["row"]), int(request.POST["col"])
     game = game.make_a_move(Cell(row, col), PLAYER_MOVE)
     win_status = check_winner(game)
     com_move: Optional[Cell] = None
     if not win_status and game.moves_left > 0:
         com_move = computer_move(game)
         win_status = check_winner(game)
+
+    if win_status:
+        game.winner = win_status.winner.value
+        game.save()
 
     return JsonResponse({"player": game.symbol,
                          "com_position": com_move._asdict()

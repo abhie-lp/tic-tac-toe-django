@@ -49,32 +49,69 @@
           {% with game=request.user.game %}
             <div class="card blue lighten-5" style="height: 500px; width: 410px">
               <div class="card-content">
-                <span class="card-title" style="font-weight: bold">
+                <div class="card-title">
+                  <span class="left" style="font-weight: 600">
                     Tic-Tac-Toe
-                </span>
+                  </span>
+                  <div class="right" style="width: 150px; font-size: 13px; margin-top: -15px">
+                    <strong style="font-weight: bold">Turn: </strong>
+                    <span id="playerTurn">PLAYER</span>
+                    <br>
+                    <span style="font-weight: bold">Status: </span>
+                    <span id="gameStatus">
+                      {% if game.winner == None %}
+                        ONGOING
+                      {% elif game.winner == 'C' %}
+                        COMPUTER WINS
+                      {% elif game.winner == 'T' %}
+                        TIE
+                      {% else %}
+                        PLAYER WINS
+                      {% endif %}
+                    </span>
+                  </div>
+                </div>
+
                 {% for row in game.board %}
                   <div class="board-row">
-                    {% for col in row %}
-                      {% if col == '1' %}
-                        <button class="square grey lighten-3">{{ game.symbol }}</button>
-                      {% elif col == '2' %}
-                        {% if game.symbol == 'X' %}
-                          <button class="square deep-orange lighten-2">O</button>
+
+                    {% if game.winner %}
+                      {% for col in row %}
+                        {% if col == '1' %}
+                          <button class="square grey lighten-3">{{ game.symbol }}</button>
+                        {% elif col == '2' %}
+                          {% if game.symbol == 'X' %}
+                            <button class="square deep-orange lighten-2">O</button>
+                          {% else %}
+                            <button class="square deep-orange lighten-2">X</button>
+                          {% endif %}
                         {% else %}
-                          <button class="square deep-orange lighten-2">X</button>
-                        {% endif %}
-                      {% else %}
-                        <form
-                            class="cellBlockForm"
-                            style="display: inline"
-                            id="cell-{{ forloop.parentloop.counter0 }}{{ forloop.counter0 }}"
-                        >
-                          <input type="hidden" name="row" value="{{ forloop.parentloop.counter0 }}"/>
-                          <input type="hidden" name="col" value="{{ forloop.counter0 }}"/>
                           <button class="square white"></button>
-                        </form>
-                      {% endif %}
-                    {% endfor %}
+                        {% endif %}
+                      {% endfor %}
+                    {% else %}
+                      {% for col in row %}
+                        {% if col == '1' %}
+                          <button class="square grey lighten-3">{{ game.symbol }}</button>
+                        {% elif col == '2' %}
+                          {% if game.symbol == 'X' %}
+                            <button class="square white">O</button>
+                          {% else %}
+                            <button class="square white">X</button>
+                          {% endif %}
+                        {% else %}
+                          <form
+                              class="cellBlockForm"
+                              style="display: inline"
+                              id="cell-{{ forloop.parentloop.counter0 }}{{ forloop.counter0 }}"
+                          >
+                            <input type="hidden" name="row" value="{{ forloop.parentloop.counter0 }}"/>
+                            <input type="hidden" name="col" value="{{ forloop.counter0 }}"/>
+                            <button class="square white"></button>
+                          </form>
+                        {% endif %}
+                      {% endfor %}
+                    {% endif %}
                   </div>
                 {% endfor %}
 
@@ -118,6 +155,9 @@
           Tie: 'T',
         })
 
+        const gameStatusElement = document.getElementById("gameStatus")
+        const playerTurnElement = document.getElementById("playerTurn")
+
         for (let ele of Array.from(blocks)) {
           const innerText = ele.textContent.trim()
           if (innerText === 'X' || innerText === 'O') {
@@ -142,6 +182,10 @@
           return button
         }
 
+        const updatePlayerTurn = () => (
+            playerTurnElement.innerText = playerTurnElement.innerText === "PLAYER" ? "COMPUTER" : "PLAYER"
+        )
+
 
         const forms = document.getElementsByClassName("cellBlockForm")
         Array.from(forms).forEach(form => form.addEventListener("submit", (event) => {
@@ -151,6 +195,8 @@
             event.target.replaceWith(
                 createButtonSymbol(document.getElementById("chosen-symbol").textContent, true)
             )
+            playerTurnElement.textContent = updatePlayerTurn()
+
             const formData = new FormData(event.target)
             fetch(
                 "{% url 'make_move' %}",
@@ -166,54 +212,63 @@
                     document.getElementById(`cell-${com['row']}${com['col']}`).replaceWith(
                         createButtonSymbol(comSymbol(json['player']))
                     )
+                  }
 
-                    if (json['win_status'] != null) {
-                      gameOver = true
-                      const { row, col, diagonal, winner } = json['win_status']
-                      const cellBlocks = document.querySelectorAll(".board-row button")
-                      const width = 3
-                      const wonCellBlocks = []
-                      if (row != null) {
-                        // Win by row
-                        for (let col of [0, 1, 2]) {
-                          wonCellBlocks.push(cellBlocks[width * row + col])
-                        }
-                      } else if (col != null) {
-                        // Win by column
-                        for (let row of [0, 1, 2]) {
-                          wonCellBlocks.push(cellBlocks[width * row + col])
-                        }
-                      } else if (diagonal != null) {
-                        // Win by diagonal
-                        switch (diagonal) {
-                          case 'F':
-                            for (let i of [0, 1, 2]) {
-                              wonCellBlocks.push(cellBlocks[width * i + i])
-                            }
-                            break
-                          case 'B':
-                            for (let i of [2, 1, 0]) {
-                              wonCellBlocks.push(cellBlocks[width * (width - i - 1) + i])
-                            }
-                            break
-                        }
+                  if (json['win_status'] !== null) {
+                    gameOver = true
+                    const { row, col, diagonal, winner } = json['win_status']
+                    const cellBlocks = document.querySelectorAll(".board-row button")
+                    const width = 3
+                    const wonCellBlocks = []
+                    if (row != null) {
+                      // Win by row
+                      for (let col of [0, 1, 2]) {
+                        wonCellBlocks.push(cellBlocks[width * row + col])
                       }
-                      switch (winner) {
-                        case Winner.Player:
-                          // Player Wins
-                          wonCellBlocks.forEach(cell => {
-                            cell.classList.remove("grey")
-                            cell.classList.add("green", "lighten-2")
-                          })
+                    } else if (col != null) {
+                      // Win by column
+                      for (let row of [0, 1, 2]) {
+                        wonCellBlocks.push(cellBlocks[width * row + col])
+                      }
+                    } else if (diagonal != null) {
+                      // Win by diagonal
+                      switch (diagonal) {
+                        case 'F':
+                          for (let i of [0, 1, 2]) {
+                            wonCellBlocks.push(cellBlocks[width * i + i])
+                          }
                           break
-                        case Winner.Computer:
-                          // Computer Wins
-                          wonCellBlocks.forEach(cell => {
-                            cell.classList.remove("white")
-                            cell.classList.add("orange", "lighten-2")
-                          })
+                        case 'B':
+                          for (let i of [2, 1, 0]) {
+                            wonCellBlocks.push(cellBlocks[width * (width - i - 1) + i])
+                          }
+                          break
                       }
                     }
+                    switch (winner) {
+                      case Winner.Player:
+                        // Player Wins
+                        wonCellBlocks.forEach(cell => {
+                          cell.classList.remove("grey")
+                          cell.classList.add("green", "lighten-2")
+                        })
+                        gameStatusElement.textContent = "PLAYER WINS"
+                        break
+                      case Winner.Computer:
+                        // Computer Wins
+                        wonCellBlocks.forEach(cell => {
+                          cell.classList.remove("white")
+                          cell.classList.add("orange", "lighten-2")
+                        })
+                        gameStatusElement.textContent = "COMPUTER WINS"
+                        break
+                      case Winner.Tie:
+                        gameStatusElement.textContent = "TIE"
+                        break
+                    }
+                    playerTurnElement.textContent = "-"
+                  } else {
+                    playerTurnElement.textContent = updatePlayerTurn()
                   }
                   blockRequest = false
                 })
