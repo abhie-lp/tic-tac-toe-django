@@ -181,6 +181,7 @@
           if (innerText === 'X' || innerText === 'O') {
             gameNotStarted = false;
             document.getElementById("changeSymbolBtn").remove()
+            document.getElementById("computerFirst").remove()
             break
           }
         }
@@ -188,6 +189,7 @@
          Array.from(blocks).forEach(ele => ele.addEventListener("click", (event) => {
           if (gameNotStarted) {
             document.getElementById("changeSymbolBtn").remove()
+            document.getElementById("computerFirst").remove()
             gameNotStarted = false
           }
         }))
@@ -302,6 +304,7 @@
           if (!blockRequest && !gameOver) {
             blockRequest = true;
             event.target.remove()
+            document.getElementById("changeSymbolBtn").remove()
             playerTurnElement.textContent = updatePlayerTurn()
 
             const formData = new FormData()
