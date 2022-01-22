@@ -80,7 +80,7 @@ def check_row_and_col(board: List) -> Optional[GameStatus]:
     for row_idx, row in enumerate(board):
         if len(set(row)) == 1 and row[0] != '-':
             status = GameStatus(
-                Winner.PLAYER1 if row[0] == PLAYER1_MOVE else Winner.PLAYER2
+                Winner.PLAYER1 if row[0] == PLAYER1_MOVE else Winner.COMPUTER
             )
             status.row = row_idx
             return status
@@ -91,7 +91,7 @@ def check_row_and_col(board: List) -> Optional[GameStatus]:
     for col_idx, col in enumerate(transpose_board):
         if len(set(col)) == 1 and col[0] != "-":
             status = GameStatus(
-                Winner.PLAYER1 if col[0] == PLAYER1_MOVE else Winner.PLAYER2
+                Winner.PLAYER1 if col[0] == PLAYER1_MOVE else Winner.COMPUTER
             )
             status.col = col_idx
             return status
@@ -118,7 +118,8 @@ def check_diagonal(board: List) -> Optional[GameStatus]:
     diagonal_fwd = tuple(board[i][i] for i in range(len(board[0])))
     if _diagonal_winner(diagonal_fwd):
         status = GameStatus(
-            Winner.PLAYER1 if diagonal_fwd[0] == PLAYER1_MOVE else Winner.PLAYER2
+            Winner.PLAYER1
+            if diagonal_fwd[0] == PLAYER1_MOVE else Winner.COMPUTER
         )
         status.diagonal = Diagonal.FORWARD
         return status
@@ -128,7 +129,8 @@ def check_diagonal(board: List) -> Optional[GameStatus]:
                          for i in range(len(board[0]) - 1, -1, -1))
     if _diagonal_winner(diagonal_bwd):
         status = GameStatus(
-            Winner.PLAYER1 if diagonal_bwd[0] == PLAYER1_MOVE else Winner.PLAYER2
+            Winner.PLAYER1
+            if diagonal_bwd[0] == PLAYER1_MOVE else Winner.COMPUTER
         )
         status.diagonal = Diagonal.BACKWARD
         return status

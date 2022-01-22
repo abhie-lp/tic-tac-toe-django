@@ -10,15 +10,12 @@ from .decorators import timeit
 from .models import PLAYER1_MOVE, Cell, Game
 from .game import computer_move, check_winner
 
+
 @timeit
 @login_required()
 def change_symbol(request):
     game: Game = request.user.game
-    if game.symbol == "X":
-        game.symbol = "0"
-    else:
-        game.symbol = "X"
-    game.save()
+    game.change_symbol()
     return HttpResponse(game.symbol)
 
 
@@ -52,14 +49,13 @@ def make_a_move_view(request):
             win_status = check_winner(game)
 
         if win_status:
-            game.winner = win_status.winner.value
-            game.save()
+            game.save_winner(win_status.winner)
 
-    return JsonResponse({"player": game.symbol,
-                         "com_position": com_move._asdict()
-                         if com_move else None,
-                         "win_status": win_status.to_json()
-                         if win_status else None})
+    return JsonResponse({
+        "player": game.symbol,
+        "com_position": com_move._asdict() if com_move else None,
+        "win_status": win_status.to_json() if win_status else None
+    })
 
 
 @timeit
