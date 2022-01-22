@@ -7,7 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from .decorators import timeit
-from .models import PLAYER_MOVE, Cell, Game
+from .models import PLAYER1_MOVE, Cell, Game
 from .game import computer_move, check_winner
 
 @timeit
@@ -44,7 +44,7 @@ def make_a_move_view(request):
         win_status = None
     else:
         row, col = int(request.POST["row"]), int(request.POST["col"])
-        game = game.make_a_move(Cell(row, col), PLAYER_MOVE)
+        game = game.make_a_move(Cell(row, col), PLAYER1_MOVE)
         win_status = check_winner(game)
         com_move: Optional[Cell] = None
         if not win_status and game.moves_left > 0:

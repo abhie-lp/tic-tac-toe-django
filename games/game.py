@@ -2,7 +2,7 @@ from enum import Enum
 from random import choice
 from typing import Optional, List, Literal
 
-from .models import Cell, Game, COMPUTER_MOVE, PLAYER_MOVE, EMPTY_MOVE, Winner
+from .models import Cell, Game, COMPUTER_MOVE, PLAYER1_MOVE, EMPTY_MOVE, Winner
 
 
 Line = Literal["row", "col"]
@@ -40,14 +40,14 @@ def minimax(game: Game, sign: Winner, is_maximizing: bool) -> int:
     if result:
         if result.winner == Winner.TIE:
             return 0
-        return (1 if result.winner == Winner.PLAYER else -1) * \
+        return (1 if result.winner == Winner.PLAYER1 else -1) * \
                (game.moves_left + 1)
     scores = []
     for cell in game.remaining_moves():
         game = game.make_a_move(cell, sign, commit=False)
         scores.append(minimax(
             game,
-            PLAYER_MOVE if sign == COMPUTER_MOVE else COMPUTER_MOVE,
+            PLAYER1_MOVE if sign == COMPUTER_MOVE else COMPUTER_MOVE,
             not is_maximizing
         ))
         game.make_a_move(cell, EMPTY_MOVE, commit=False)
@@ -66,7 +66,7 @@ def computer_move(game: Game) -> Optional[Cell]:
     best_score, best_move = float("inf"), Cell(0, 0)
     for cell in game.remaining_moves():
         game: Game = game.make_a_move(cell, COMPUTER_MOVE, commit=False)
-        score = minimax(game, PLAYER_MOVE, True)
+        score = minimax(game, PLAYER1_MOVE, True)
         game.make_a_move(cell, EMPTY_MOVE, commit=False)
         if score < best_score:
             best_score = score
@@ -80,7 +80,7 @@ def check_row_and_col(board: List) -> Optional[GameStatus]:
     for row_idx, row in enumerate(board):
         if len(set(row)) == 1 and row[0] != '-':
             status = GameStatus(
-                Winner.PLAYER if row[0] == PLAYER_MOVE else Winner.COM
+                Winner.PLAYER1 if row[0] == PLAYER1_MOVE else Winner.PLAYER2
             )
             status.row = row_idx
             return status
@@ -91,7 +91,7 @@ def check_row_and_col(board: List) -> Optional[GameStatus]:
     for col_idx, col in enumerate(transpose_board):
         if len(set(col)) == 1 and col[0] != "-":
             status = GameStatus(
-                Winner.PLAYER if col[0] == PLAYER_MOVE else Winner.COM
+                Winner.PLAYER1 if col[0] == PLAYER1_MOVE else Winner.PLAYER2
             )
             status.col = col_idx
             return status
@@ -118,7 +118,7 @@ def check_diagonal(board: List) -> Optional[GameStatus]:
     diagonal_fwd = tuple(board[i][i] for i in range(len(board[0])))
     if _diagonal_winner(diagonal_fwd):
         status = GameStatus(
-            Winner.PLAYER if diagonal_fwd[0] == PLAYER_MOVE else Winner.COM
+            Winner.PLAYER1 if diagonal_fwd[0] == PLAYER1_MOVE else Winner.PLAYER2
         )
         status.diagonal = Diagonal.FORWARD
         return status
@@ -128,7 +128,7 @@ def check_diagonal(board: List) -> Optional[GameStatus]:
                          for i in range(len(board[0]) - 1, -1, -1))
     if _diagonal_winner(diagonal_bwd):
         status = GameStatus(
-            Winner.PLAYER if diagonal_bwd[0] == PLAYER_MOVE else Winner.COM
+            Winner.PLAYER1 if diagonal_bwd[0] == PLAYER1_MOVE else Winner.PLAYER2
         )
         status.diagonal = Diagonal.BACKWARD
         return status

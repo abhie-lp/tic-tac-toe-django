@@ -1,21 +1,24 @@
 from collections import namedtuple
-from typing import List
+from typing import List, TypeVar
 
 from django.db.models import Model, OneToOneField, CharField, CASCADE, \
     DateTimeField, PositiveSmallIntegerField, TextChoices
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth import get_user_model
 
+from accounts.models import CustomUser
+
 
 class Winner(TextChoices):
     NONE = ""
-    PLAYER = "P"
-    COM = "C"
+    PLAYER1 = "P"
+    PLAYER2 = "C"
     TIE = "T"
 
 
-PLAYER_MOVE = Winner.PLAYER
-COMPUTER_MOVE = Winner.COM
+PLAYER1_MOVE = Winner.PLAYER1
+COMPUTER_MOVE = Winner.PLAYER2
+PLAYER2_MOVE = Winner.PLAYER2
 EMPTY_MOVE = '-'
 TOTAL_MOVES = 9
 Cell = namedtuple("Cell", "row col")
@@ -26,11 +29,10 @@ def default_board() -> list:
     return [["-", "-", "-"], ["-", "-", "-"], ["-", "-", "-"]]
 
 
-class Game(Model):
-    user = OneToOneField(get_user_model(),
-                         on_delete=CASCADE,
-                         related_name="game")
-    symbol = CharField(max_length=1, default="X")
+T = TypeVar('T', bound='GameAbstract')
+
+
+class GameAbstract(Model):
     board = ArrayField(ArrayField(
         CharField(max_length=1), size=3
     ), default=default_board, size=3)
@@ -40,12 +42,12 @@ class Game(Model):
     created = DateTimeField(auto_now_add=True)
     updated = DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return self.user.username
+    class Meta:
+        abstract = True
 
     def make_a_move(
             self, cell: Cell, sign: Winner, commit: bool = True
-    ) -> "Game":
+    ) -> T:
         """
         Make Player or Computer move and decrement the moves_left if commit
         """
@@ -71,3 +73,13 @@ class Game(Model):
                 if col == EMPTY_MOVE:
                     moves.append(Cell(row_idx, col_idx))
         return moves
+
+
+class Game(GameAbstract):
+    user: CustomUser = OneToOneField(
+        get_user_model(), on_delete=CASCADE, related_name="game"
+    )
+    symbol = CharField(max_length=1, default="X")
+
+    def __str__(self):
+        return self.user.username
