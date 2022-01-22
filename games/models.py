@@ -2,12 +2,20 @@ from collections import namedtuple
 from typing import List
 
 from django.db.models import Model, OneToOneField, CharField, CASCADE, \
-    DateTimeField, PositiveSmallIntegerField, BooleanField
+    DateTimeField, PositiveSmallIntegerField, TextChoices
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth import get_user_model
 
-PLAYER_MOVE = '1'
-COMPUTER_MOVE = '2'
+
+class Winner(TextChoices):
+    NONE = ""
+    PLAYER = "P"
+    COM = "C"
+    TIE = "T"
+
+
+PLAYER_MOVE = Winner.PLAYER
+COMPUTER_MOVE = Winner.COM
 EMPTY_MOVE = '-'
 TOTAL_MOVES = 9
 Cell = namedtuple("Cell", "row col")
@@ -27,7 +35,8 @@ class Game(Model):
         CharField(max_length=1), size=3
     ), default=default_board, size=3)
     moves_left = PositiveSmallIntegerField(default=TOTAL_MOVES)
-    winner = CharField(max_length=1, null=True, blank=True)
+    winner = CharField(choices=Winner.choices, max_length=1,
+                       null=True, blank=True)
     created = DateTimeField(auto_now_add=True)
     updated = DateTimeField(auto_now=True)
 
@@ -35,7 +44,7 @@ class Game(Model):
         return self.user.username
 
     def make_a_move(
-            self, cell: Cell, sign: str, commit: bool = True
+            self, cell: Cell, sign: Winner, commit: bool = True
     ) -> "Game":
         """
         Make Player or Computer move and decrement the moves_left if commit

@@ -2,7 +2,7 @@ from enum import Enum
 from random import choice
 from typing import Optional, List, Literal
 
-from .models import Cell, Game, COMPUTER_MOVE, PLAYER_MOVE, EMPTY_MOVE
+from .models import Cell, Game, COMPUTER_MOVE, PLAYER_MOVE, EMPTY_MOVE, Winner
 
 
 Line = Literal["row", "col"]
@@ -12,13 +12,6 @@ class Diagonal(Enum):
     NONE = None
     FORWARD = "F"
     BACKWARD = "B"
-
-
-class Winner(Enum):
-    NONE = None
-    PLAYER = "P"
-    COM = "C"
-    TIE = "T"
 
 
 class GameStatus:
@@ -41,7 +34,7 @@ class GameStatus:
                f'winner={self.winner}>'
 
 
-def minimax(game: Game, sign: str, is_maximizing: bool) -> int:
+def minimax(game: Game, sign: Winner, is_maximizing: bool) -> int:
     """Player is maximizing and CPU is minimizing"""
     result: GameStatus = check_winner(game)
     if result:
