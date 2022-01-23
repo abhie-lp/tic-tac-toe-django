@@ -21,6 +21,12 @@ def change_symbol(request):
 
 @timeit
 @login_required()
+def game_with_computer_view(request):
+    return render(request, 'games/game_with_computer.html')
+
+
+@timeit
+@login_required()
 def game_page(request):
     return render(request, "games/game.html")
 
@@ -60,6 +66,6 @@ def make_a_move_view(request):
 
 @timeit
 @login_required()
-def new_game_view(request):
+def new_game_with_computer_view(request):
     request.user.game.new_game()
-    return redirect("game_page")
+    return redirect("computer_game")
