@@ -3,10 +3,12 @@ from typing import List, TypeVar
 
 from django.db.models import Model, OneToOneField, CharField, CASCADE, \
     DateTimeField, PositiveSmallIntegerField, TextChoices, ForeignKey
+from django.db.models.manager import Manager
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth import get_user_model
 
 from accounts.models import CustomUser
+from .managers import GameP2PManager
 
 
 class Winner(TextChoices):
@@ -116,6 +118,9 @@ class GameP2P(GameAbstract):
     player1_wins = PositiveSmallIntegerField(default=0)
     player2_wins = PositiveSmallIntegerField(default=0)
     total_games = PositiveSmallIntegerField(default=0)
+
+    objects = Manager()
+    game = GameP2PManager()
 
     class Meta:
         unique_together = ('player1', 'player2')
