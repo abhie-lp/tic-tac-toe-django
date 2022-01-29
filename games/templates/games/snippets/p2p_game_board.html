@@ -2,10 +2,10 @@
   <div class="card-content">
     <div class="card-title">
       <span style="font-weight: 600; font-size: 34px">TIC TAC TOE</span>
-      <button class="teal" id="newGame">
+      <button class="teal" id="newGame" style="cursor: pointer">
         <i class="material-icons">restart_alt</i>
       </button>
-      <button class="orange" id="gameStatus">
+      <button class="orange black-text disabled" id="gameStatus" disabled>
         <i class="material-icons">pause</i>
       </button>
     </div>
@@ -15,7 +15,7 @@
         {% for col in row %}
           <button
             id="cell-{{ forloop.parentloop.counter0 }}{{ forloop.counter0 }}"
-            class="square white"
+            class="square grey disabled"
             data-row="{{ forloop.parentloop.counter0 }}"
             data-col="{{ forloop.counter0 }}"
           ></button>

@@ -65,7 +65,7 @@
             <strong>YOU</strong>
           </div>
 
-          <table>
+          <table style="font-weight: bold">
             <tr>
               <td>Status</td>
               <td colspan="2">Connected</td>
@@ -103,10 +103,10 @@
             <strong>{{ username }}</strong>
           </div>
 
-          <table>
+          <table style="font-weight: bold">
             <tr>
               <td>Status </td>
-              <td>Joining</td>
+              <td id="opponentStatus">Joining</td>
             </tr>
             <tr>
               <td>Symbol</td>
@@ -147,10 +147,47 @@
       (function() {
         console.log('Game with player');
         const WS_RECONNECT_TIMEOUT = 2000;
+        const CURRENT_USER = '{{ request.user }}';
         let myTurn = false;
 
-        // Connect to WS
+        const WS_MSG_TYPE = {
+          'PLAYER_JOIN': 'player.join',
+          'PLAYER_MOVE': 'player.move',
+          'PLAYER_LEFT': 'player.left',
+          'NEW_GAME': 'new.game',
+          'GAME_OVER': 'game.over',
+          'PLAY_GAME': 'play.game',
+        }
+
         let ws = null;
+
+        const sendJson = (data) => {
+          ws.send(JSON.stringify(data))
+        }
+
+        const handlePlayerJoin = () => {
+          sendJson({'type': WS_MSG_TYPE.PLAY_GAME, 'user': CURRENT_USER, 'message': 'Lets play'});
+        }
+
+        const handlePlayGame = () => {
+          Array.from(document.getElementsByClassName('square')).forEach(ele => {
+            ele.classList.remove('grey', 'disabled');
+            ele.classList.add('white');
+          })
+          document.getElementById('gameStatus').innerHTML = '<i class="material-icons">play_arrow</i>'
+          document.getElementById('opponentStatus').innerText = 'Connected'
+        }
+
+        const handlePlayerLeft = () => {
+          Array.from(document.getElementsByClassName('square')).forEach(ele => {
+            ele.classList.add('grey', 'disabled');
+            ele.classList.remove('white');
+          })
+          document.getElementById('gameStatus').innerHTML = '<i class="material-icons">pause</i>'
+          document.getElementById('opponentStatus').innerText = 'Joining'
+        }
+
+        // Connect to WS
         const connect_ws = () => {
           ws = new WebSocket(
             `ws://${window.location.host}/ws/game/join/{{ opponent.id }}/`
@@ -161,7 +198,36 @@
           };
 
           ws.onmessage = function(message) {
-            console.log('WS message', JSON.parse(message.data))
+            const ws_data = JSON.parse(message.data);
+            console.log('WS message', ws_data)
+            switch (ws_data.type) {
+              case WS_MSG_TYPE.GAME_OVER:
+                console.log('GAME OVER');
+                break
+              case WS_MSG_TYPE.NEW_GAME:
+                console.log('NEW GAME');
+                break
+              case WS_MSG_TYPE.PLAYER_JOIN:
+                console.log('PLAYER JOIN');
+                if (ws_data['user'] !== CURRENT_USER) {
+                  handlePlayerJoin()
+                }
+                break
+              case WS_MSG_TYPE.PLAYER_MOVE:
+                console.log('PLAYER MOVE');
+                break
+              case WS_MSG_TYPE.PLAYER_LEFT:
+                console.log('PLAYER LEFT')
+                handlePlayerLeft();
+                break
+              case WS_MSG_TYPE.PLAY_GAME:
+                console.log('PLAY GAME');
+                handlePlayGame();
+                break
+              default:
+                console.error('Invalid type')
+                break
+            }
           };
 
           ws.onclose = function() {
@@ -177,7 +243,6 @@
           };
         }
         connect_ws();
-
       })()
     </script>
   {% else %}

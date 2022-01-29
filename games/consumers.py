@@ -1,7 +1,6 @@
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
 
-from accounts.models import CustomUser
 from .models import GameP2P
 
 
@@ -28,6 +27,7 @@ class GameP2PConsumer(JsonWebsocketConsumer):
             {
                 'type': 'player.join',
                 'message': f'{self.scope["user"].username} joined the game',
+                'user': self.scope['user'].username
             }
         )
 
@@ -36,14 +36,20 @@ class GameP2PConsumer(JsonWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
+        async_to_sync(self.channel_layer.group_send)(
+            self.room_group_name,
+            {
+                'type': 'player.left',
+                'message': f'{self.scope["user"].username} has left',
+                'user': self.scope['user'].username
+            }
+        )
         self.close()
 
     def receive_json(self, content, **kwargs):
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name,
             {
-                'type': 'player.move',
-                'user': self.scope['user'].username,
                 **content
             }
         )
@@ -52,4 +58,10 @@ class GameP2PConsumer(JsonWebsocketConsumer):
         self.send_json(event)
 
     def player_join(self, event):
+        self.send_json(event)
+
+    def player_left(self, event):
+        self.send_json(event)
+
+    def play_game(self, event):
         self.send_json(event)
