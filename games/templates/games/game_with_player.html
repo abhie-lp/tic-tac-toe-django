@@ -33,6 +33,10 @@
     .square:hover {
       border: 3px solid #999;
     }
+    
+    .blockMove {
+      cursor: not-allowed;
+    }
 
     .sidenav li > span {
       color: rgba(0,0,0,0.87);
@@ -74,7 +78,7 @@
               <td>
                 <span>Symbol</span>
               </td>
-              <td style="width: 100%">{{ you.symbol }}</td>
+              <td id="mySymbol">{{ you.symbol }}</td>
               <td >
                 <button id="changeSymbol" class="transparent">
                   <i class="material-icons" style="font-size: 22px">change_circle</i>
@@ -110,7 +114,7 @@
             </tr>
             <tr>
               <td>Symbol</td>
-              <td>{{ opponent.symbol }}</td>
+              <td id="opponentSymbol">{{ opponent.symbol }}</td>
             </tr>
             <tr>
               <td>Wins</td>
@@ -148,7 +152,10 @@
         console.log('Game with player');
         const WS_RECONNECT_TIMEOUT = 2000;
         const CURRENT_USER = '{{ request.user }}';
-        let myTurn = false;
+        let MOVES_MADE = false;
+        let MY_TURN = true;
+        let MY_SYMBOL = document.getElementById('mySymbol').innerText;
+        let OPPONENT_SYMBOL = document.getElementById('opponentSymbol').innerText;
 
         const WS_MSG_TYPE = {
           'PLAYER_JOIN': 'player.join',
@@ -165,6 +172,22 @@
           ws.send(JSON.stringify(data))
         }
 
+        const blockEmptyCells = () => {
+          Array.from(document.getElementsByClassName('square')).forEach(ele => {
+            if (ele.textContent.trim().length === 0) {
+              ele.classList.add('blockMove');
+            }
+          });
+        }
+
+        const enableEmptyCells = () => {
+          Array.from(document.getElementsByClassName('square')).forEach(ele => {
+            if (ele.textContent.trim().length === 0) {
+              ele.classList.remove('blockMove');
+            }
+          })
+        }
+
         const handlePlayerJoin = () => {
           sendJson({'type': WS_MSG_TYPE.PLAY_GAME, 'user': CURRENT_USER, 'message': 'Lets play'});
         }
@@ -172,7 +195,13 @@
         const handlePlayGame = () => {
           Array.from(document.getElementsByClassName('square')).forEach(ele => {
             ele.classList.remove('grey', 'disabled');
-            ele.classList.add('white');
+            let color = 'white'
+            if (ele.textContent.trim() === MY_SYMBOL) {
+              color = 'light-green';
+            } else if (ele.textContent.trim() === OPPONENT_SYMBOL) {
+              color = 'lime'
+            }
+            ele.classList.add(color);
           })
           document.getElementById('gameStatus').innerHTML = '<i class="material-icons">play_arrow</i>'
           document.getElementById('opponentStatus').innerText = 'Connected'
@@ -185,6 +214,35 @@
           })
           document.getElementById('gameStatus').innerHTML = '<i class="material-icons">pause</i>'
           document.getElementById('opponentStatus').innerText = 'Joining'
+        }
+
+        const handleButtonClick = (button) => {
+          if (MY_TURN) {
+            button.innerText = MY_SYMBOL;
+            const row = Number.parseInt(button.dataset.row);
+            const col = Number.parseInt(button.dataset.col);
+            button.classList.remove('white')
+            button.classList.add('light-green', 'black-text');
+            button.disabled = true;
+            sendJson({
+              type: WS_MSG_TYPE.PLAYER_MOVE,
+              user: CURRENT_USER,
+              row: row,
+              col: col,
+            });
+            MY_TURN = false;
+            blockEmptyCells();
+          }
+        }
+
+        const handlePlayerMove = (row, col) => {
+          MY_TURN = true;
+          enableEmptyCells();
+          const button = document.getElementById(`cell-${row}${col}`);
+          button.innerText = OPPONENT_SYMBOL;
+          button.classList.remove('white')
+          button.classList.add('lime', 'black-text');
+          button.disabled = true;
         }
 
         // Connect to WS
@@ -215,6 +273,9 @@
                 break
               case WS_MSG_TYPE.PLAYER_MOVE:
                 console.log('PLAYER MOVE');
+                if (ws_data['user'] !== CURRENT_USER) {
+                  handlePlayerMove(ws_data['row'], ws_data['col']);
+                }
                 break
               case WS_MSG_TYPE.PLAYER_LEFT:
                 console.log('PLAYER LEFT')
@@ -243,6 +304,13 @@
           };
         }
         connect_ws();
+
+        Array.from(document.getElementsByClassName('square')).forEach(ele => {
+          ele.addEventListener('click', function(e) {
+            console.log('button clicked', e.target);
+            handleButtonClick(e.target);
+          })
+        })
       })()
     </script>
   {% else %}
