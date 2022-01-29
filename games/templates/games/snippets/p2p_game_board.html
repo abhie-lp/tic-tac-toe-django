@@ -1,7 +1,13 @@
 <div class="card blue lighten-5">
   <div class="card-content">
     <div class="card-title">
-      <span style="font-weight: 600">TIC TAC TOE</span>
+      <span style="font-weight: 600; font-size: 34px">TIC TAC TOE</span>
+      <button class="teal" id="newGame">
+        <i class="material-icons">restart_alt</i>
+      </button>
+      <button class="orange" id="gameStatus">
+        <i class="material-icons">pause</i>
+      </button>
     </div>
 
     {% for row in game.board %}

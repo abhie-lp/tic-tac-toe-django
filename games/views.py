@@ -27,7 +27,7 @@ def game_with_player_view(request, username=None):
     if username:
         player2 = get_object_or_404(CustomUser, username=username)
         game: GameP2P = GameP2P.game.get_game(request.user.id, player2.id)
-        if game.player1 == request.user:
+        if game.player1_id == request.user.id:
             you = {'symbol': game.player1_symbol, 'wins': game.player1_wins}
             opponent = {'symbol': game.player2_symbol, 'wins': game.player2_wins}
         else:

@@ -5,7 +5,7 @@ from django.db.models.manager import Manager
 class GameP2PManager(Manager):
     def get_game(self, player1_id: int, player2_id: int):
         try:
-            game = self.model.objects.get(
+            game = self.model.objects.defer('created').get(
                 Q(player1_id=player1_id, player2_id=player2_id) |
                 Q(player1_id=player2_id, player2_id=player1_id)
             )
