@@ -43,6 +43,12 @@
       line-height: 48px;
       padding: 0 32px;
     }
+
+    #changeSymbol {
+      margin-left: -5px;
+      display: inline;
+      cursor: pointer;
+    }
   </style>
 {% endblock extra_css %}
 
@@ -53,7 +59,35 @@
 {% block container_content %}
   {% if username %}
     <div  class="col l2">
-      <strong>YOU: {{ request.user.username }}</strong>
+      <div class="card green lighten-2">
+        <div class="card-content">
+          <div class="card-title">
+            <strong>YOU</strong>
+          </div>
+
+          <table>
+            <tr>
+              <td>Status</td>
+              <td colspan="2">Connected</td>
+            </tr>
+            <tr>
+              <td>
+                <span>Symbol</span>
+              </td>
+              <td style="width: 100%">{{ you.symbol }}</td>
+              <td >
+                <button id="changeSymbol" class="transparent">
+                  <i class="material-icons" style="font-size: 22px">change_circle</i>
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td>Wins</td>
+              <td colspan="2">{{ you.wins }}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
     </div>
 
     <div class="col l5 center-align center">
@@ -61,7 +95,28 @@
     </div>
 
     <div class="col l2">
-      <strong>{{ username }}</strong>
+      <div class="card orange lighten-4">
+        <div class="card-content">
+          <div class="card-title">
+            <strong>{{ username }}</strong>
+          </div>
+
+          <table>
+            <tr>
+              <td>Status </td>
+              <td>Joining</td>
+            </tr>
+            <tr>
+              <td>Symbol</td>
+              <td>{{ opponent.symbol }}</td>
+            </tr>
+            <tr>
+              <td>Wins</td>
+              <td>{{ opponent.wins }}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
     </div>
   {% else %}
     <div  class="col l2 m1">&nbsp;</div>

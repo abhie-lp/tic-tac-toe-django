@@ -7,15 +7,12 @@
     {% for row in game.board %}
       <div class="board-row">
         {% for col in row %}
-          <form
-              class="cellBlockForm"
-              style="display: inline"
-              id="cell-{{ forloop.parentloop.counter0 }}{{ forloop.counter0 }}"
-          >
-            <input type="hidden" name="row" value="{{ forloop.parentloop.counter0 }}"/>
-            <input type="hidden" name="col" value="{{ forloop.counter0 }}"/>
-            <button class="square white"></button>
-          </form>
+          <button
+            id="cell-{{ forloop.parentloop.counter0 }}{{ forloop.counter0 }}"
+            class="square white"
+            data-row="{{ forloop.parentloop.counter0 }}"
+            data-col="{{ forloop.counter0 }}"
+          ></button>
         {% endfor %}
       </div>
     {% endfor %}

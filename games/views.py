@@ -20,14 +20,22 @@ def change_symbol(request):
     game.change_symbol()
     return HttpResponse(game.symbol)
 
+
 @timeit
 @login_required()
 def game_with_player_view(request, username=None):
     if username:
         player2 = get_object_or_404(CustomUser, username=username)
-        game = GameP2P.game.get_game(request.user, player2)
-        return render(request, 'games/game_with_player.html', {'username': username,
-                                                               'game': game})
+        game: GameP2P = GameP2P.game.get_game(request.user, player2)
+        if game.player1 == request.user:
+            you = {'symbol': game.player1_symbol, 'wins': game.player1_wins}
+            opponent = {'symbol': game.player2_symbol, 'wins': game.player2_wins}
+        else:
+            you = {'symbol': game.player2_symbol, 'wins': game.player2_wins}
+            opponent = {'symbol': game.player1_symbol, 'wins': game.player2_wins}
+        return render(request, 'games/game_with_player.html', {
+            'username': username, 'game': game, 'you': you, 'opponent': opponent
+        })
     return render(request, 'games/game_with_player.html')
 
 
