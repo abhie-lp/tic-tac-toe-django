@@ -104,7 +104,7 @@
           <table>
             <tr>
               <td>Status </td>
-              <td>Joining</td>
+              <td>Joining {{ opponent.id }}</td>
             </tr>
             <tr>
               <td>Symbol</td>
@@ -141,6 +141,30 @@
 
 {% block extra_script %}
   {% if username %}
+    <script>
+      (function() {
+          console.log('Game with player');
+          let ws = new WebSocket(
+            `ws://${window.location.host}/ws/game/join/{{ opponent.id }}/`
+          );
+
+          ws.onopen = function() {
+            console.log('WS open')
+          };
+
+          ws.onmessage = function(message) {
+            console.log('WS message', JSON.parse(message.data))
+          };
+
+          ws.onclose = function() {
+            console.log('WS close');
+          };
+
+          ws.onerror = function() {
+            console.log('WS error');
+          };
+        })()
+    </script>
   {% else %}
     <script>
       document.getElementById('username').addEventListener('keyup', function(e) {

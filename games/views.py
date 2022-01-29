@@ -32,7 +32,8 @@ def game_with_player_view(request, username=None):
             opponent = {'symbol': game.player2_symbol, 'wins': game.player2_wins}
         else:
             you = {'symbol': game.player2_symbol, 'wins': game.player2_wins}
-            opponent = {'symbol': game.player1_symbol, 'wins': game.player2_wins}
+            opponent = {'symbol': game.player1_symbol, 'wins': game.player2_wins, 'id': player2.id}
+        opponent.update({'id': player2.id})
         return render(request, 'games/game_with_player.html', {
             'username': username, 'game': game, 'you': you, 'opponent': opponent
         })
