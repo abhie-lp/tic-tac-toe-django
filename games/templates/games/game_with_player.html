@@ -1,7 +1,99 @@
 {% extends 'base.html' %}
 
-{% block title %}VS. Player{% if username %} - {{ username }}{% endif %}{% endblock title %}
+{% block extra_css %}
+  <style>
+    .board-row {
+      clear: both;
+      display: table;
+      content: "";
+      margin: auto;
+    }
 
-{% block container %}
-  Playing with {{ username }}
-{% endblock container %}
+    .square {
+      background: #fff;
+      border: 2px solid #999;
+      border-radius: .3em;
+      box-shadow: 1px 1px 0 0, 2px 2px 0 0, 3px 3px 0 0, 4px 4px 0 0, 5px 5px 0 0;
+      float: left;
+      font-size: 50px;
+      font-weight: bolder;
+      line-height: 34px;
+      height: 100px;
+      margin: 2px;
+      padding: 0;
+      text-align: center;
+      width: 100px;
+    }
+
+    .square:focus {
+      outline: none;
+      border: 3px solid #999;
+    }
+
+    .square:hover {
+      border: 3px solid #999;
+    }
+
+    .sidenav li > span {
+      color: rgba(0,0,0,0.87);
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      height: 48px;
+      line-height: 48px;
+      padding: 0 32px;
+    }
+  </style>
+{% endblock extra_css %}
+
+{% block title %}
+  VS. Player {% if username %}<{{ username }}>{% else %}[Select User]{% endif %}
+{% endblock title %}
+
+{% block container_content %}
+  {% if username %}
+    <div  class="col l2">
+      <strong>YOU: {{ request.user.username }}</strong>
+    </div>
+
+    <div class="col l5 center-align center">
+      {% include 'games/snippets/p2p_game_board.html' with game=game%}
+    </div>
+
+    <div class="col l2">
+      <strong>{{ username }}</strong>
+    </div>
+  {% else %}
+    <div  class="col l2 m1">&nbsp;</div>
+
+    <div class="col l5 m10 center-align center">
+      <div class="card-panel">
+        <div class="input-field">
+          <i class="material-icons prefix">account_circle</i>
+          <input id="username" type="text">
+          <label for="username">Username</label>
+          <span class="helper-text left-align" data-error="wrong" data-success="right">
+            Enter username and press Enter to start the game.
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col l2 m1 hide-on-med-and-down">&nbsp;</div>
+    {% endif %}
+
+{% endblock container_content %}
+
+{% block extra_script %}
+  {% if username %}
+  {% else %}
+    <script>
+      document.getElementById('username').addEventListener('keyup', function(e) {
+        console.log(e)
+        if (e.key === 'Enter' && e.target.value.length > 0) {
+          window.location = window.location.pathname + e.target.value;
+        }
+      })
+    </script>
+  {% endif %}
+{% endblock extra_script %}

@@ -1,13 +1,15 @@
 from typing import Optional
 
 from django.http import HttpResponse, JsonResponse, HttpResponseNotAllowed
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
+from accounts.models import CustomUser
+
 from .decorators import timeit
-from .models import PLAYER1_MOVE, Cell, Game
+from .models import PLAYER1_MOVE, Cell, Game, GameP2P
 from .game import computer_move, check_winner
 
 
@@ -18,9 +20,15 @@ def change_symbol(request):
     game.change_symbol()
     return HttpResponse(game.symbol)
 
-
+@timeit
+@login_required()
 def game_with_player_view(request, username=None):
-    return render(request, 'games/game_with_player.html', {'username': username})
+    if username:
+        player2 = get_object_or_404(CustomUser, username=username)
+        game = GameP2P.game.get_game(request.user, player2)
+        return render(request, 'games/game_with_player.html', {'username': username,
+                                                               'game': game})
+    return render(request, 'games/game_with_player.html')
 
 
 @timeit
