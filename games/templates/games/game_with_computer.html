@@ -48,121 +48,118 @@
   </style>
 {% endblock extra_css %}
 
-{% block container %}
-  <div class="row">
-    <div class="col s12 m8 offset-m2 l7 offset-l4" style="margin-top: 2%">
-      {% with game=request.user.game %}
-        <div class="card blue lighten-5" style="height: 500px; width: 420px">
-          <div class="card-content">
-            <div class="card-title">
-              <span class="left" style="font-weight: 600">
-                Tic-Tac-Toe
-              </span>
-              <div class="right"
-                   style="width: 160px; font-size: 13px; margin-top: -15px; font-weight: bold">
-                <strong>Turn: </strong>
-                <span id="playerTurn">PLAYER</span>
-                <br>
-                <span>Status: </span>
-                <span id="gameStatus">
-                  {% if game.winner == None %}
-                    ONGOING
-                  {% elif game.winner == 'C' %}
-                    COMPUTER WINS
-                  {% elif game.winner == 'T' %}
-                    TIE
-                  {% else %}
-                    PLAYER WINS
-                  {% endif %}
-                </span>
-              </div>
-            </div>
-
-            {% for row in game.board %}
-              <div class="board-row">
-
-                {% if game.winner %}
-                  {% for col in row %}
-                    {% if col == '1' %}
-                      <button class="square grey lighten-3">{{ game.symbol }}</button>
-                    {% elif col == '2' %}
-                      {% if game.symbol == 'X' %}
-                        <button class="square deep-orange lighten-2">O</button>
-                      {% else %}
-                        <button class="square deep-orange lighten-2">X</button>
-                      {% endif %}
-                    {% else %}
-                      <button class="square white"></button>
-                    {% endif %}
-                  {% endfor %}
+{% block container_content %}
+  {% with game=request.user.game %}
+    <div class="col l6 offset-l3">
+      <div class="card blue lighten-5" style="width: 100%">
+        <div class="card-content" style="height: 420px;">
+          <div class="card-title">
+            <span class="left" style="font-weight: 600">
+              Tic-Tac-Toe
+            </span>
+            <div class="right"
+                 style="width: 160px; font-size: 13px; margin-top: -15px; font-weight: bold">
+              <strong>Turn: </strong>
+              <span id="playerTurn">PLAYER</span>
+              <br>
+              <span>Status: </span>
+              <span id="gameStatus">
+                {% if game.winner == None %}
+                  ONGOING
+                {% elif game.winner == 'C' %}
+                  COMPUTER WINS
+                {% elif game.winner == 'T' %}
+                  TIE
                 {% else %}
-                  {% for col in row %}
-                    {% if col == '1' %}
-                      <button class="square grey lighten-3">{{ game.symbol }}</button>
-                    {% elif col == '2' %}
-                      {% if game.symbol == 'X' %}
-                        <button class="square white">O</button>
-                      {% else %}
-                        <button class="square white">X</button>
-                      {% endif %}
-                    {% else %}
-                      <form
-                          class="cellBlockForm"
-                          style="display: inline"
-                          id="cell-{{ forloop.parentloop.counter0 }}{{ forloop.counter0 }}"
-                      >
-                        <input type="hidden" name="row" value="{{ forloop.parentloop.counter0 }}"/>
-                        <input type="hidden" name="col" value="{{ forloop.counter0 }}"/>
-                        <button class="square white"></button>
-                      </form>
-                    {% endif %}
-                  {% endfor %}
+                  PLAYER WINS
                 {% endif %}
-              </div>
-            {% endfor %}
-
-          </div>
-          <div class="card-action">
-            {% if game.moves_left == 9 %}
-              <div class="center" id="computerFirst" style="font-weight: bold; margin-bottom: 5px">
-                <button
-                    class="red btn-small waves-effect waves-red"
-                    type="button"
-                    style="font-weight: bold"
-                >
-                  Computer First
-                </button>
-              </div>
-            {% endif %}
-
-            <div class="game-info center" style="font-weight: bold; margin-bottom: 5px">
-              <div class="status">
-                Your chosen symbol is <span id="chosen-symbol">{{ game.symbol }}</span>. &nbsp;
-                <button
-                    id="changeSymbolBtn"
-                    class="waves-effect waves-light btn-small"
-                    style="font-weight: bold"
-                >
-                  Change
-                </button>
-              </div>
+              </span>
             </div>
+          </div>
 
-            <div class="center">
-              <a
-                  class="red btn-small waves-effect waves-orange orange"
-                  href="{% url 'reset_game' %}"
+          {% for row in game.board %}
+            <div class="board-row">
+
+              {% if game.winner %}
+                {% for col in row %}
+                  {% if col == '1' %}
+                    <button class="square grey lighten-3">{{ game.symbol }}</button>
+                  {% elif col == '2' %}
+                    {% if game.symbol == 'X' %}
+                      <button class="square deep-orange lighten-2">O</button>
+                    {% else %}
+                      <button class="square deep-orange lighten-2">X</button>
+                    {% endif %}
+                  {% else %}
+                    <button class="square white"></button>
+                  {% endif %}
+                {% endfor %}
+              {% else %}
+                {% for col in row %}
+                  {% if col == '1' %}
+                    <button class="square grey lighten-3">{{ game.symbol }}</button>
+                  {% elif col == '2' %}
+                    {% if game.symbol == 'X' %}
+                      <button class="square white">O</button>
+                    {% else %}
+                      <button class="square white">X</button>
+                    {% endif %}
+                  {% else %}
+                    <form
+                        class="cellBlockForm"
+                        style="display: inline"
+                        id="cell-{{ forloop.parentloop.counter0 }}{{ forloop.counter0 }}"
+                    >
+                      <input type="hidden" name="row" value="{{ forloop.parentloop.counter0 }}"/>
+                      <input type="hidden" name="col" value="{{ forloop.counter0 }}"/>
+                      <button class="square white"></button>
+                    </form>
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+        <div class="card-action" style="height:140px">
+          {% if game.moves_left == 9 %}
+            <div class="center" id="computerFirst" style="font-weight: bold; margin-bottom: 5px">
+              <button
+                  class="red btn-small waves-effect waves-red"
+                  type="button"
                   style="font-weight: bold"
               >
-                NEW GAME
-              </a>
+                Computer First
+              </button>
+            </div>
+          {% endif %}
+
+          <div class="game-info center" style="font-weight: bold; margin-bottom: 5px">
+            <div class="status">
+              Your chosen symbol is <span id="chosen-symbol">{{ game.symbol }}</span>. &nbsp;
+              <button
+                  id="changeSymbolBtn"
+                  class="waves-effect waves-light btn-small"
+                  style="font-weight: bold"
+              >
+                Change
+              </button>
             </div>
           </div>
+
+          <div class="center">
+            <a
+                class="red btn-small waves-effect waves-orange orange"
+                href="{% url 'reset_game' %}"
+                style="font-weight: bold"
+            >
+              NEW GAME
+            </a>
+          </div>
         </div>
-      {% endwith %}
+      </div>
     </div>
-  </div>
-{% endblock container %}
+  {% endwith %}
+{% endblock container_content %}
     <!-- Compiled and minified JavaScript -->
 {% block extra_script %}
   <script>

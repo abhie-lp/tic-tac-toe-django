@@ -19,6 +19,10 @@ def change_symbol(request):
     return HttpResponse(game.symbol)
 
 
+def game_with_player_view(request, username=None):
+    return render(request, 'games/game_with_player.html', {'username': username})
+
+
 @timeit
 @login_required()
 def game_with_computer_view(request):

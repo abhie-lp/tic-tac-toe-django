@@ -1,0 +1,80 @@
+<nav class="blue-grey">
+  <div class="nav-wrapper">
+    <a href="{% url 'game_page' %}" class="brand-logo">TIC-TAC-TOE</a>
+    <a href="#" data-target="mobile-demo" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+    <ul class="right hide-on-med-and-down">
+      <li><a href="https://github.com/abhie-lp/tic-tac-toe-django"><i class="material-icons">code</i></a></li>
+      {% if request.user.is_authenticated %}
+        <li>
+          <a href="{% url 'computer_game' %}">
+            <i class="material-icons inline-icons">smart_toy</i> VS. COMPUTER
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'player_game' %}">
+            <i class="material-icons inline-icons">people_alt</i> VS. PLAYER
+          </a>
+        </li>
+        <li>
+          <i class="material-icons inline-icons">person</i>&nbsp;&nbsp;
+          <span style="font-weight: bold">{{ request.user.username }}</span>
+        </li>
+        <li>
+          <a href="{% url 'logout' %}" style="font-weight: bold">
+            <i class="material-icons inline-icons">logout</i>&nbsp;&nbsp;Logout
+          </a>
+        </li>
+      {% else %}
+        <li>
+          <a href="{% url 'login' %}">
+            <i class="material-icons inline-icons">login</i>&nbsp;&nbsp;Login
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'register' %}">
+            <i class="material-icons inline-icons">person_add</i>&nbsp;&nbsp;Register
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+  </div>
+</nav>
+
+<ul class="sidenav" id="mobile-demo">
+  <li class="cyan lighten-4"><a href="https://github.com/abhie-lp/tic-tac-toe-django">
+    <i class="material-icons">code</i>
+  </a></li>
+  {% if request.user.is_authenticated %}
+    <li class="cyan lighten-4">
+      <a href="{% url 'computer_game' %}" style="font-weight: bolder">
+        <i class="material-icons inline-icons">smart_toy</i> VS. COMPUTER
+      </a>
+    </li>
+    <li class="cyan lighten-4">
+      <a href="{% url 'player_game' %}" style="font-weight: bolder">
+        <i class="material-icons inline-icons">people_alt</i> VS. PLAYER
+      </a>
+    </li>
+    <li class="cyan lighten-4">
+      <a class="is-disabled" style="font-weight: bolder">
+        <i class="material-icons">person</i>{{ request.user.username }}
+      </a>
+    </li>
+    <li class="cyan lighten-4">
+      <a href="{% url 'logout' %}" style="font-weight: bolder">
+        <i class="material-icons">logout</i>Logout
+      </a>
+    </li>
+  {% else %}
+    <li class="cyan lighten-4">
+      <a href="{% url 'login' %}" style="font-weight: bolder">
+        <i class="material-icons">login</i>&nbsp;&nbsp;Login
+      </a>
+    </li>
+    <li class="cyan lighten-4">
+      <a href="{% url 'register' %}" style="font-weight: bolder">
+        <i class="material-icons">person_add</i>&nbsp;&nbsp;Register
+      </a>
+    </li>
+  {% endif %}
+</ul>
