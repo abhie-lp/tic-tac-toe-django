@@ -1,9 +1,8 @@
 from enum import Enum
 from random import choice
-from typing import Optional, List, Literal
+from typing import Optional, List, Literal, Union
 
-from .models import Cell, Game, COMPUTER_MOVE, PLAYER1_MOVE, EMPTY_MOVE, Winner
-
+from .models import Cell, Game, EMPTY_MOVE, Winner, GameP2P
 
 Line = Literal["row", "col"]
 
@@ -47,7 +46,7 @@ def minimax(game: Game, sign: Winner, is_maximizing: bool) -> int:
         game = game.make_a_move(cell, sign, commit=False)
         scores.append(minimax(
             game,
-            PLAYER1_MOVE if sign == COMPUTER_MOVE else COMPUTER_MOVE,
+            Winner.PLAYER1 if sign == Winner.COMPUTER else Winner.COMPUTER,
             not is_maximizing
         ))
         game.make_a_move(cell, EMPTY_MOVE, commit=False)
@@ -60,28 +59,26 @@ def computer_move(game: Game) -> Optional[Cell]:
     best_move: Cell
     if game.moves_left == 9:
         cell = Cell(choice((0, 1, 2)), choice((0, 1, 2)))
-        game.make_a_move(cell, COMPUTER_MOVE)
+        game.make_a_move(cell, Winner.COMPUTER)
         return cell
 
     best_score, best_move = float("inf"), Cell(0, 0)
     for cell in game.remaining_moves():
-        game: Game = game.make_a_move(cell, COMPUTER_MOVE, commit=False)
-        score = minimax(game, PLAYER1_MOVE, True)
+        game: Game = game.make_a_move(cell, Winner.COMPUTER, commit=False)
+        score = minimax(game, Winner.PLAYER1, True)
         game.make_a_move(cell, EMPTY_MOVE, commit=False)
         if score < best_score:
             best_score = score
             best_move = cell
-    game.make_a_move(best_move, COMPUTER_MOVE)
+    game.make_a_move(best_move, Winner.COMPUTER)
     return best_move
 
 
-def check_row_and_col(board: List) -> Optional[GameStatus]:
+def check_row_and_col(board: List, player1: Winner, player2: Winner) -> Optional[GameStatus]:
     """Check board rows game winner or tie"""
     for row_idx, row in enumerate(board):
         if len(set(row)) == 1 and row[0] != '-':
-            status = GameStatus(
-                Winner.PLAYER1 if row[0] == PLAYER1_MOVE else Winner.COMPUTER
-            )
+            status = GameStatus(player1 if row[0] == player1 else player2)
             status.row = row_idx
             return status
 
@@ -90,9 +87,7 @@ def check_row_and_col(board: List) -> Optional[GameStatus]:
     transpose_board = [[row[i] for row in board] for i in range(len(board[0]))]
     for col_idx, col in enumerate(transpose_board):
         if len(set(col)) == 1 and col[0] != "-":
-            status = GameStatus(
-                Winner.PLAYER1 if col[0] == PLAYER1_MOVE else Winner.COMPUTER
-            )
+            status = GameStatus(player1 if col[0] == player1 else player2)
             status.col = col_idx
             return status
         # Check if any value in col is -
@@ -112,15 +107,12 @@ def _diagonal_winner(values: tuple) -> bool:
     return False
 
 
-def check_diagonal(board: List) -> Optional[GameStatus]:
+def check_diagonal(board: List, player1: Winner, player2: Winner) -> Optional[GameStatus]:
     """Check diagonals for the winner or tie"""
     # Get the forward diagonal
     diagonal_fwd = tuple(board[i][i] for i in range(len(board[0])))
     if _diagonal_winner(diagonal_fwd):
-        status = GameStatus(
-            Winner.PLAYER1
-            if diagonal_fwd[0] == PLAYER1_MOVE else Winner.COMPUTER
-        )
+        status = GameStatus(player1 if diagonal_fwd[0] == player1 else player2)
         status.diagonal = Diagonal.FORWARD
         return status
 
@@ -128,21 +120,22 @@ def check_diagonal(board: List) -> Optional[GameStatus]:
     diagonal_bwd = tuple(board[len(board[0]) - 1 - i][i]
                          for i in range(len(board[0]) - 1, -1, -1))
     if _diagonal_winner(diagonal_bwd):
-        status = GameStatus(
-            Winner.PLAYER1
-            if diagonal_bwd[0] == PLAYER1_MOVE else Winner.COMPUTER
-        )
+        status = GameStatus(player1 if diagonal_bwd[0] == player1 else player2)
         status.diagonal = Diagonal.BACKWARD
         return status
     return None
 
 
-def check_winner(game: Game) -> Optional[GameStatus]:
+def check_winner(
+        game: Union[Game, GameP2P],
+        player1: Winner = Winner.PLAYER1,
+        player2: Winner = Winner.COMPUTER
+) -> Optional[GameStatus]:
     if game.moves_left < 5:
-        result: GameStatus = check_row_and_col(game.board)
+        result: GameStatus = check_row_and_col(game.board, player1, player2)
         if result:
             return result
-        result: GameStatus = check_diagonal(game.board)
+        result: GameStatus = check_diagonal(game.board, player1, player2)
         if result:
             return result
     return None

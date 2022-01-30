@@ -19,9 +19,6 @@ class Winner(TextChoices):
     TIE = "T"
 
 
-PLAYER1_MOVE = Winner.PLAYER1
-COMPUTER_MOVE = Winner.COMPUTER
-PLAYER2_MOVE = Winner.PLAYER2
 EMPTY_MOVE = '-'
 TOTAL_MOVES = 9
 Cell = namedtuple("Cell", "row col")

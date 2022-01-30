@@ -9,7 +9,7 @@ from django.views.decorators.http import require_POST
 from accounts.models import CustomUser
 
 from .decorators import timeit
-from .models import PLAYER1_MOVE, Cell, Game, GameP2P
+from .models import Winner, Cell, Game, GameP2P
 from .game import computer_move, check_winner
 
 
@@ -68,7 +68,7 @@ def make_a_move_view(request):
         win_status = None
     else:
         row, col = int(request.POST["row"]), int(request.POST["col"])
-        game = game.make_a_move(Cell(row, col), PLAYER1_MOVE)
+        game = game.make_a_move(Cell(row, col), Winner.PLAYER1)
         win_status = check_winner(game)
         com_move: Optional[Cell] = None
         if not win_status and game.moves_left > 0:
