@@ -80,7 +80,7 @@
               </td>
               <td id="mySymbol">{{ you.symbol }}</td>
               <td >
-                <button id="changeSymbol" class="transparent">
+                <button id="changeSymbol" class="transparent" {% if game.moves_left != 9 %}disabled{% endif %}>
                   <i class="material-icons" style="font-size: 22px">change_circle</i>
                 </button>
               </td>
@@ -152,18 +152,30 @@
         console.log('Game with player');
         const WS_RECONNECT_TIMEOUT = 2000;
         const CURRENT_USER = '{{ request.user }}';
+        const OTHER_USER = '{{ username }}'
         let MOVES_MADE = false;
         let MY_TURN = true;
-        let MY_SYMBOL = document.getElementById('mySymbol').innerText;
-        let OPPONENT_SYMBOL = document.getElementById('opponentSymbol').innerText;
+        let MY_SYMBOL = document.getElementById('mySymbol').innerText.trim();
+        let OPPONENT_SYMBOL = document.getElementById('opponentSymbol').innerText.trim();
+
+        const GAME = {
+          CHANGE_SYMBOL_BTN: document.getElementById('changeSymbol'),
+          NEW_GAME: document.getElementById('newGame'),
+          CELL_BLOCKS: Array.from(document.getElementsByClassName('square')),
+          GAME_STATUS: document.getElementById('gameStatus'),
+          OPPONENT_STATUS: document.getElementById('opponentStatus'),
+          MY_SYMBOL:  document.getElementById('mySymbol'),
+          OPPONENT_SYMBOL: document.getElementById('opponentSymbol'),
+        };
 
         const WS_MSG_TYPE = {
-          'PLAYER_JOIN': 'player.join',
-          'PLAYER_MOVE': 'player.move',
-          'PLAYER_LEFT': 'player.left',
-          'NEW_GAME': 'new.game',
-          'GAME_OVER': 'game.over',
-          'PLAY_GAME': 'play.game',
+          PLAYER_JOIN: 'player.join',
+          PLAYER_MOVE: 'player.move',
+          PLAYER_LEFT: 'player.left',
+          NEW_GAME: 'new.game',
+          GAME_OVER: 'game.over',
+          PLAY_GAME: 'play.game',
+          CHANGE_SYMBOL: 'change.symbol',
         }
 
         let ws = null;
@@ -173,15 +185,23 @@
         }
 
         const blockEmptyCells = () => {
-          Array.from(document.getElementsByClassName('square')).forEach(ele => {
+          GAME.CELL_BLOCKS.forEach(ele => {
             if (ele.textContent.trim().length === 0) {
               ele.classList.add('blockMove');
             }
           });
         }
 
+        const changeChangeSymbolBtn = () => {
+          if (!MOVES_MADE) {
+            GAME.CHANGE_SYMBOL_BTN.disabled = true;
+            GAME.CHANGE_SYMBOL_BTN.style.cursor = 'not-allowed';
+            MOVES_MADE = true;
+          }
+        }
+
         const enableEmptyCells = () => {
-          Array.from(document.getElementsByClassName('square')).forEach(ele => {
+          GAME.CELL_BLOCKS.forEach(ele => {
             if (ele.textContent.trim().length === 0) {
               ele.classList.remove('blockMove');
             }
@@ -193,8 +213,9 @@
         }
 
         const handlePlayGame = () => {
-          Array.from(document.getElementsByClassName('square')).forEach(ele => {
-            ele.classList.remove('grey', 'disabled');
+          GAME.CELL_BLOCKS.forEach(ele => {
+            ele.classList.remove('grey');
+            ele.disabled = false;
             let color = 'white'
             if (ele.textContent.trim() === MY_SYMBOL) {
               color = 'light-green';
@@ -203,17 +224,17 @@
             }
             ele.classList.add(color);
           })
-          document.getElementById('gameStatus').innerHTML = '<i class="material-icons">play_arrow</i>'
-          document.getElementById('opponentStatus').innerText = 'Connected'
+          GAME.GAME_STATUS.innerHTML = '<i class="material-icons">play_arrow</i>'
+          GAME.OPPONENT_STATUS.innerText = 'Connected'
         }
 
         const handlePlayerLeft = () => {
-          Array.from(document.getElementsByClassName('square')).forEach(ele => {
+          GAME.CELL_BLOCKS.forEach(ele => {
             ele.classList.add('grey', 'disabled');
             ele.classList.remove('white');
           })
-          document.getElementById('gameStatus').innerHTML = '<i class="material-icons">pause</i>'
-          document.getElementById('opponentStatus').innerText = 'Joining'
+          GAME.GAME_STATUS.innerHTML = '<i class="material-icons">pause</i>'
+          GAME.OPPONENT_STATUS.innerText = 'Joining'
         }
 
         const handleButtonClick = (button) => {
@@ -233,6 +254,10 @@
             MY_TURN = false;
             blockEmptyCells();
           }
+
+          if (!MOVES_MADE) {
+            changeChangeSymbolBtn();
+          }
         }
 
         const handlePlayerMove = (row, col) => {
@@ -243,6 +268,20 @@
           button.classList.remove('white')
           button.classList.add('lime', 'black-text');
           button.disabled = true;
+          if (!MOVES_MADE) {
+            changeChangeSymbolBtn();
+          }
+        }
+
+        const handleChangeSymbolBtnClick = () => {
+          sendJson({type: WS_MSG_TYPE.CHANGE_SYMBOL, user: CURRENT_USER})
+        }
+
+        const handleChangeSymbol = (data) => {
+          GAME.MY_SYMBOL.textContent = data[CURRENT_USER];
+          GAME.OPPONENT_SYMBOL.textContent = data[OTHER_USER];
+          MY_SYMBOL = data[CURRENT_USER];
+          OPPONENT_SYMBOL = data[OTHER_USER];
         }
 
         // Connect to WS
@@ -268,7 +307,7 @@
               case WS_MSG_TYPE.PLAYER_JOIN:
                 console.log('PLAYER JOIN');
                 if (ws_data['user'] !== CURRENT_USER) {
-                  handlePlayerJoin()
+                  handlePlayerJoin();
                 }
                 break
               case WS_MSG_TYPE.PLAYER_MOVE:
@@ -284,6 +323,10 @@
               case WS_MSG_TYPE.PLAY_GAME:
                 console.log('PLAY GAME');
                 handlePlayGame();
+                break
+              case WS_MSG_TYPE.CHANGE_SYMBOL:
+                console.log('CHANGE SYMBOL');
+                handleChangeSymbol(ws_data);
                 break
               default:
                 console.error('Invalid type')
@@ -305,11 +348,18 @@
         }
         connect_ws();
 
-        Array.from(document.getElementsByClassName('square')).forEach(ele => {
+        GAME.CELL_BLOCKS.forEach(ele => {
           ele.addEventListener('click', function(e) {
             console.log('button clicked', e.target);
             handleButtonClick(e.target);
           })
+        });
+
+        GAME.CHANGE_SYMBOL_BTN.addEventListener('click', function(e) {
+          if (!MOVES_MADE) {
+            console.log('Change Symbol')
+            handleChangeSymbolBtnClick();
+          }
         })
       })()
     </script>

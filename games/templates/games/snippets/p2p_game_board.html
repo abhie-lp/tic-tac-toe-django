@@ -15,9 +15,10 @@
         {% for col in row %}
           <button
             id="cell-{{ forloop.parentloop.counter0 }}{{ forloop.counter0 }}"
-            class="square grey disabled"
+            class="square grey"
             data-row="{{ forloop.parentloop.counter0 }}"
             data-col="{{ forloop.counter0 }}"
+            disabled
           ></button>
         {% endfor %}
       </div>
