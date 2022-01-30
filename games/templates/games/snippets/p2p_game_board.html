@@ -2,12 +2,12 @@
   <div class="card-content">
     <div class="card-title">
       <span style="font-weight: 600; font-size: 34px">TIC TAC TOE</span>
-      <button class="teal" id="newGame" style="cursor: pointer">
+      <button class="teal" id="newGame" style="cursor: pointer" {% if not game.winner and game.moves_left > 0 %}disabled{% endif %}>
         <i class="material-icons">restart_alt</i>
       </button>
-      <button class="orange black-text disabled" id="gameStatus" disabled>
-        <i class="material-icons">pause</i>
-      </button>
+        <button class="orange black-text disabled" id="gameStatus" disabled>
+          <i class="material-icons">{% if game.winner or game.moves_left == 0 %}stop{% else %}pause{% endif %}</i>
+        </button>
     </div>
 
     {% for row in game.board %}
@@ -15,11 +15,17 @@
         {% for col in row %}
           <button
             id="cell-{{ forloop.parentloop.counter0 }}{{ forloop.counter0 }}"
-            class="square grey"
+            class="square black-text {% if col == you.sign %}green{% elif col == opponent.sign %}orange{% elif game.winner %}blockMove{% else %}grey{% endif %}"
             data-row="{{ forloop.parentloop.counter0 }}"
             data-col="{{ forloop.counter0 }}"
             disabled
-          ></button>
+          >
+            {% if col == you.sign %}
+              {{ you.symbol }}
+            {% elif col == opponent.sign %}
+              {{ opponent.symbol }}
+            {% endif %}
+          </button>
         {% endfor %}
       </div>
     {% endfor %}

@@ -131,6 +131,22 @@ class GameP2P(GameAbstract):
         if commit:
             self.save()
 
+    def save_winner(self, winner: Winner, commit: bool = True):
+        update_fields = ['winner']
+        self.winner = winner
+        if winner == Winner.PLAYER1:
+            self.player1_wins += 1
+            update_fields.append('player1_wins')
+        elif winner == Winner.PLAYER2:
+            self.player2_wins += 1
+            update_fields.append('player2_wins')
+        if commit:
+            self.save(update_fields=update_fields)
+
+    def make_a_move(self, cell: Cell, sign: Winner, commit: bool = True) -> 'GameP2P':
+        self.refresh_from_db(fields=('board', 'moves_left'))
+        return super(GameP2P, self).make_a_move(cell, sign, commit)
+
     def change_symbol(self) -> 'GameP2P':
         if self.player1_symbol == 'X':
             self.player1_symbol, self.player2_symbol = 'O', 'X'

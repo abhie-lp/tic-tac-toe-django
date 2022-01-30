@@ -87,7 +87,7 @@
             </tr>
             <tr>
               <td>Wins</td>
-              <td colspan="2">{{ you.wins }}</td>
+              <td id="myWins" colspan="2">{{ you.wins }}</td>
             </tr>
           </table>
         </div>
@@ -118,7 +118,7 @@
             </tr>
             <tr>
               <td>Wins</td>
-              <td>{{ opponent.wins }}</td>
+              <td id="opponentWins">{{ opponent.wins }}</td>
             </tr>
           </table>
         </div>
@@ -151,8 +151,12 @@
       (function() {
         console.log('Game with player');
         const WS_RECONNECT_TIMEOUT = 2000;
-        const CURRENT_USER = '{{ request.user }}';
-        const OTHER_USER = '{{ username }}'
+        const CURRENT_USER = '{{ request.user.username }}';
+        const OTHER_USER = '{{ username }}';
+        let GAME_OVER = false;
+        if ("{{ game.moves_left }}" === '0' || "{{ game.winner }}".length === 1) {
+          GAME_OVER = true;
+        }
         let MOVES_MADE = false;
         let MY_TURN = true;
         let MY_SYMBOL = document.getElementById('mySymbol').innerText.trim();
@@ -166,6 +170,8 @@
           OPPONENT_STATUS: document.getElementById('opponentStatus'),
           MY_SYMBOL:  document.getElementById('mySymbol'),
           OPPONENT_SYMBOL: document.getElementById('opponentSymbol'),
+          MY_WINS: document.getElementById('myWins'),
+          OPPONENT_WINS: document.getElementById('opponentWins'),
         };
 
         const WS_MSG_TYPE = {
@@ -188,6 +194,7 @@
           GAME.CELL_BLOCKS.forEach(ele => {
             if (ele.textContent.trim().length === 0) {
               ele.classList.add('blockMove');
+              ele.disabled = true;
             }
           });
         }
@@ -203,6 +210,7 @@
         const enableEmptyCells = () => {
           GAME.CELL_BLOCKS.forEach(ele => {
             if (ele.textContent.trim().length === 0) {
+              ele.disabled = false;
               ele.classList.remove('blockMove');
             }
           })
@@ -215,16 +223,20 @@
         const handlePlayGame = () => {
           GAME.CELL_BLOCKS.forEach(ele => {
             ele.classList.remove('grey');
-            ele.disabled = false;
+            if (!GAME_OVER && ele.textContent.trim().length === 0) {
+              ele.disabled = false;
+            }
             let color = 'white'
             if (ele.textContent.trim() === MY_SYMBOL) {
-              color = 'light-green';
+              color = 'green';
             } else if (ele.textContent.trim() === OPPONENT_SYMBOL) {
-              color = 'lime'
+              color = 'orange'
             }
             ele.classList.add(color);
           })
-          GAME.GAME_STATUS.innerHTML = '<i class="material-icons">play_arrow</i>'
+          if (!GAME_OVER) {
+            GAME.GAME_STATUS.innerHTML = '<i class="material-icons">play_arrow</i>'
+          }
           GAME.OPPONENT_STATUS.innerText = 'Connected'
         }
 
@@ -243,13 +255,14 @@
             const row = Number.parseInt(button.dataset.row);
             const col = Number.parseInt(button.dataset.col);
             button.classList.remove('white')
-            button.classList.add('light-green', 'black-text');
+            button.classList.add('green');
             button.disabled = true;
             sendJson({
               type: WS_MSG_TYPE.PLAYER_MOVE,
               user: CURRENT_USER,
               row: row,
               col: col,
+              symbol: MY_SYMBOL
             });
             MY_TURN = false;
             blockEmptyCells();
@@ -260,13 +273,13 @@
           }
         }
 
-        const handlePlayerMove = (row, col) => {
+        const handlePlayerMove = (data) => {
           MY_TURN = true;
           enableEmptyCells();
-          const button = document.getElementById(`cell-${row}${col}`);
-          button.innerText = OPPONENT_SYMBOL;
+          const button = document.getElementById(`cell-${data["row"]}${data["col"]}`);
+          button.innerText = data["symbol"];
           button.classList.remove('white')
-          button.classList.add('lime', 'black-text');
+          button.classList.add('orange');
           button.disabled = true;
           if (!MOVES_MADE) {
             changeChangeSymbolBtn();
@@ -282,6 +295,52 @@
           GAME.OPPONENT_SYMBOL.textContent = data[OTHER_USER];
           MY_SYMBOL = data[CURRENT_USER];
           OPPONENT_SYMBOL = data[OTHER_USER];
+        }
+
+        const colorWinBoxes = (win) => {
+          const width = 3
+          const wonCellBlocks = []
+          if (win["row"] != null) {
+            // Win by row
+            for (let col of [0, 1, 2]) {
+              wonCellBlocks.push(GAME.CELL_BLOCKS[width * win['row'] + col])
+            }
+          } else if (win['col'] != null) {
+            // Win by column
+            for (let row of [0, 1, 2]) {
+              wonCellBlocks.push(GAME.CELL_BLOCKS[width * row + win['col']])
+            }
+          } else if (win['diagonal'] != null) {
+            // Win by diagonal
+            switch (win['diagonal']) {
+              case 'F':
+                for (let i of [0, 1, 2]) {
+                  wonCellBlocks.push(GAME.CELL_BLOCKS[width * i + i])
+                }
+                break
+              case 'B':
+                for (let i of [2, 1, 0]) {
+                  wonCellBlocks.push(GAME.CELL_BLOCKS[width * (width - i - 1) + i])
+                }
+                break
+            }
+          }
+
+          wonCellBlocks.forEach(cell => {
+            cell.classList.remove('green', 'orange');
+            cell.classList.add('blue');
+          })
+        }
+
+        const handleGameOver = (data) => {
+          GAME_OVER = true;
+          GAME.GAME_STATUS.innerHTML =`<i class="material-icons">stop</i>`;
+          GAME.NEW_GAME.disabled = false;
+          GAME.MY_WINS.innerText = data[CURRENT_USER];
+          GAME.OPPONENT_WINS.innerText = data[OTHER_USER];
+          blockEmptyCells();
+          colorWinBoxes(data['win'])
+          console.log(data)
         }
 
         // Connect to WS
@@ -300,6 +359,10 @@
             switch (ws_data.type) {
               case WS_MSG_TYPE.GAME_OVER:
                 console.log('GAME OVER');
+                if (ws_data['user'] !== CURRENT_USER) {
+                  handlePlayerMove(ws_data)
+                }
+                handleGameOver(ws_data)
                 break
               case WS_MSG_TYPE.NEW_GAME:
                 console.log('NEW GAME');
@@ -313,7 +376,7 @@
               case WS_MSG_TYPE.PLAYER_MOVE:
                 console.log('PLAYER MOVE');
                 if (ws_data['user'] !== CURRENT_USER) {
-                  handlePlayerMove(ws_data['row'], ws_data['col']);
+                  handlePlayerMove(ws_data);
                 }
                 break
               case WS_MSG_TYPE.PLAYER_LEFT:
@@ -349,10 +412,12 @@
         connect_ws();
 
         GAME.CELL_BLOCKS.forEach(ele => {
-          ele.addEventListener('click', function(e) {
-            console.log('button clicked', e.target);
-            handleButtonClick(e.target);
-          })
+          if (ele.textContent.trim().length === 0) {
+            ele.addEventListener('click', function(e) {
+              console.log('button clicked', e.target);
+              handleButtonClick(e.target);
+            })
+          }
         });
 
         GAME.CHANGE_SYMBOL_BTN.addEventListener('click', function(e) {

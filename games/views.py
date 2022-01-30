@@ -28,14 +28,14 @@ def game_with_player_view(request, username=None):
         player2 = get_object_or_404(CustomUser.objects.only('id'), username=username)
         game: GameP2P = GameP2P.game.get_game(request.user.id, player2.id)
         if game.player1_id == request.user.id:
-            you = {'symbol': game.player1_symbol, 'wins': game.player1_wins}
-            opponent = {'symbol': game.player2_symbol, 'wins': game.player2_wins}
+            you = {'symbol': game.player1_symbol, 'wins': game.player1_wins, 'sign': Winner.PLAYER1}
+            p2 = {'symbol': game.player2_symbol, 'wins': game.player2_wins, 'sign': Winner.PLAYER2}
         else:
-            you = {'symbol': game.player2_symbol, 'wins': game.player2_wins}
-            opponent = {'symbol': game.player1_symbol, 'wins': game.player2_wins, 'id': player2.id}
-        opponent.update({'id': player2.id})
+            you = {'symbol': game.player2_symbol, 'wins': game.player2_wins, 'sign': Winner.PLAYER2}
+            p2 = {'symbol': game.player1_symbol, 'wins': game.player1_wins, 'sign': Winner.PLAYER1}
+        p2.update({'id': player2.id})
         return render(request, 'games/game_with_player.html', {
-            'username': username, 'game': game, 'you': you, 'opponent': opponent
+            'username': username, 'game': game, 'you': you, 'opponent': p2
         })
     return render(request, 'games/game_with_player.html')
 
