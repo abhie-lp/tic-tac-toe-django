@@ -80,7 +80,12 @@
               </td>
               <td id="mySymbol">{{ you.symbol }}</td>
               <td >
-                <button id="changeSymbol" class="transparent" {% if game.moves_left != 9 %}disabled{% endif %}>
+                <button
+                  id="changeSymbol"
+                  class="transparent tooltipped" {% if game.moves_left != 9 %}disabled{% endif %}
+                  data-position="right"
+                  data-tooltip="Change your symbol"
+                >
                   <i class="material-icons" style="font-size: 22px">change_circle</i>
                 </button>
               </td>
@@ -151,7 +156,7 @@
       (function() {
         console.log('Game with player');
         const WS_RECONNECT_TIMEOUT = 2000;
-        const RELOAD_TIMEOUT = 1000;
+        const RELOAD_TIMEOUT = 3020;
         const CURRENT_USER = '{{ request.user.username }}';
         const OTHER_USER = '{{ username }}';
         let GAME_OVER = false;
@@ -333,10 +338,29 @@
           })
         }
 
+        const startNewGame = () => {
+          let counter = ['looks_one', 'looks_two', 'looks_3']
+          let idx = 0
+          setInterval(() => {
+            console.log('IDX', idx);
+            GAME.NEW_GAME.innerHTML = `<i class='material-icons'>${counter[idx]}</i>`
+            idx += 1;
+          }, 1000)
+          setTimeout(() => {
+            ws.onclose = () => {};
+            sendJson({
+              type: WS_MSG_TYPE.NEW_GAME, user: CURRENT_USER
+            })
+            ws.close();
+            window.location.reload();
+          }, RELOAD_TIMEOUT);
+        }
+
         const handleGameOver = (data) => {
           GAME_OVER = true;
           GAME.GAME_STATUS.innerHTML =`<i class="material-icons">stop</i>`;
           GAME.NEW_GAME.disabled = false;
+          startNewGame();
           GAME.MY_WINS.innerText = data[CURRENT_USER];
           GAME.OPPONENT_WINS.innerText = data[OTHER_USER];
           blockEmptyCells();
@@ -349,22 +373,14 @@
           sendJson({
             type: WS_MSG_TYPE.NEW_GAME, user: CURRENT_USER
           })
-
-          setTimeout(() => {
-            ws.close()
-            console.log('Reloading');
-            window.location.reload();
-          }, RELOAD_TIMEOUT);
         }
 
         const handleNewGame = () => {
           GAME.NEW_GAME.disabled = true;
           ws.onclose = () => {};
-          ws.close()
-          setTimeout(() => {
-            console.log('Reloading');
-            window.location.reload();
-          }, RELOAD_TIMEOUT);
+          ws.close();
+          console.log('Reloading');
+          window.location.reload();
         }
 
         // Connect to WS
@@ -390,9 +406,7 @@
                 break
               case WS_MSG_TYPE.NEW_GAME:
                 console.log('NEW GAME');
-                if (ws_data['user'] !== CURRENT_USER) {
-                  handleNewGame();
-                }
+                handleNewGame();
                 break
               case WS_MSG_TYPE.PLAYER_JOIN:
                 console.log('PLAYER JOIN');
