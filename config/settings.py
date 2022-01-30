@@ -164,6 +164,18 @@ CHANNEL_LAYERS = {
 
 LOGGING = {
     'version': 1,
+    'formatters': {
+        'simple': {
+            'format': '[{asctime}] {levelname} {message}',
+            'style': '{',
+            'datefmt': "%H:%M:%S"
+        },
+        'sql': {
+            'format': '[{asctime}] {levelname} {message}\n',
+            'style': '{',
+            'datefmt': "%H:%M:%S"
+        },
+    },
     'filters': {
         'require_debug_true': {
             '()': 'django.utils.log.RequireDebugTrue',
@@ -171,20 +183,33 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'filters': ['require_debug_true'],
+            'formatter': 'simple',
+            'level': 'INFO',
+        },
+        'sql': {
             'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
+            'formatter': 'sql',
+            'level': 'DEBUG',
         }
     },
     'loggers': {
-        'django.db.backends': {
-            'level': 'DEBUG',
-            'handlers': ['console'],
-        },
         'django': {
             'handlers': ['console'],
             'level': 'INFO',
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'django.db.backends': {
+            'level': 'DEBUG',
+            'handlers': ['sql'],
+            'propagate': True,
         },
     }
 }
-
