@@ -58,7 +58,7 @@ class GameAbstract(Model):
         # Decrement sign if move is other than EMPTY_MOVE else increase
         self.moves_left -= 1 if sign != EMPTY_MOVE else -1
         if commit:
-            self.save()
+            self.save(update_fields=('board', 'moves_left'))
         return self
 
     def new_game(self, commit: bool = True):
@@ -82,7 +82,7 @@ class GameAbstract(Model):
         """Set winner field"""
         self.winner = winner.value
         if commit:
-            self.save()
+            self.save(update_fields=('winner',))
 
     def change_symbol(self) -> T:
         """Change the current symbol"""
@@ -90,7 +90,7 @@ class GameAbstract(Model):
             self.symbol = "0"
         else:
             self.symbol = "X"
-        self.save()
+        self.save(update_fields=('symbol',))
         return self
 
 
@@ -139,5 +139,5 @@ class GameP2P(GameAbstract):
             self.player1_symbol, self.player2_symbol = 'O', 'X'
         else:
             self.player1_symbol, self.player2_symbol = 'X', 'O'
-        self.save()
+        self.save(update_fields=('player1_symbol', 'player2_symbol'))
         return self
