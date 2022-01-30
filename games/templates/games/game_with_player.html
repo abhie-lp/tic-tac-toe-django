@@ -151,6 +151,7 @@
       (function() {
         console.log('Game with player');
         const WS_RECONNECT_TIMEOUT = 2000;
+        const RELOAD_TIMEOUT = 1000;
         const CURRENT_USER = '{{ request.user.username }}';
         const OTHER_USER = '{{ username }}';
         let GAME_OVER = false;
@@ -343,6 +344,29 @@
           console.log(data)
         }
 
+        const handleNewGameClick = (button) => {
+          button.disabled = true;
+          sendJson({
+            type: WS_MSG_TYPE.NEW_GAME, user: CURRENT_USER
+          })
+
+          setTimeout(() => {
+            ws.close()
+            console.log('Reloading');
+            window.location.reload();
+          }, RELOAD_TIMEOUT);
+        }
+
+        const handleNewGame = () => {
+          GAME.NEW_GAME.disabled = true;
+          ws.onclose = () => {};
+          ws.close()
+          setTimeout(() => {
+            console.log('Reloading');
+            window.location.reload();
+          }, RELOAD_TIMEOUT);
+        }
+
         // Connect to WS
         const connect_ws = () => {
           ws = new WebSocket(
@@ -366,6 +390,9 @@
                 break
               case WS_MSG_TYPE.NEW_GAME:
                 console.log('NEW GAME');
+                if (ws_data['user'] !== CURRENT_USER) {
+                  handleNewGame();
+                }
                 break
               case WS_MSG_TYPE.PLAYER_JOIN:
                 console.log('PLAYER JOIN');
@@ -420,11 +447,15 @@
           }
         });
 
-        GAME.CHANGE_SYMBOL_BTN.addEventListener('click', function(e) {
+        GAME.CHANGE_SYMBOL_BTN.addEventListener('click', function() {
           if (!MOVES_MADE) {
             console.log('Change Symbol')
             handleChangeSymbolBtnClick();
           }
+        })
+
+        GAME.NEW_GAME.addEventListener('click', function(e) {
+          handleNewGameClick(e.target)
         })
       })()
     </script>

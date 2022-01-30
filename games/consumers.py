@@ -64,6 +64,8 @@ class GameP2PConsumer(JsonWebsocketConsumer):
             content.update(self.handle_change_symbol())
         elif action == 'player.move':
             content = self.handle_player_move(content)
+        elif action == 'new.game':
+            self.handle_new_game()
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name,
             {
@@ -72,7 +74,9 @@ class GameP2PConsumer(JsonWebsocketConsumer):
         )
 
     def handle_player_move(self, content: dict) -> dict:
-        self.game = self.game.make_a_move(Cell(int(content['row']), int(content['col'])), self.my_move)
+        self.game = self.game.make_a_move(
+            Cell(int(content['row']), int(content['col'])), self.my_move
+        )
         winner: GameStatus = check_winner(self.game, self.my_move, self.other_move)
         if winner:
             content['type'] = 'game.over'
@@ -103,4 +107,10 @@ class GameP2PConsumer(JsonWebsocketConsumer):
         self.send_json(event)
 
     def game_over(self, event):
+        self.send_json(event)
+
+    def handle_new_game(self):
+        self.game.new_game()
+
+    def new_game(self, event):
         self.send_json(event)

@@ -2,7 +2,7 @@
   <div class="card-content">
     <div class="card-title">
       <span style="font-weight: 600; font-size: 34px">TIC TAC TOE</span>
-      <button class="teal" id="newGame" style="cursor: pointer" {% if not game.winner and game.moves_left > 0 %}disabled{% endif %}>
+      <button autocomplete="off" class="teal" id="newGame" style="cursor: pointer" {% if game.winner is None %}disabled{% endif %}>
         <i class="material-icons">restart_alt</i>
       </button>
         <button class="orange black-text disabled" id="gameStatus" disabled>

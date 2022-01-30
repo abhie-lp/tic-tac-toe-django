@@ -129,7 +129,7 @@ class GameP2P(GameAbstract):
         super(GameP2P, self).new_game(commit=False)
         self.total_games += 1
         if commit:
-            self.save()
+            self.save(update_fields=('board', 'total_games', 'winner', 'moves_left'))
 
     def save_winner(self, winner: Winner, commit: bool = True):
         update_fields = ['winner']
