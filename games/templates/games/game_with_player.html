@@ -62,70 +62,79 @@
 
 {% block container_content %}
   {% if username %}
-    <div  class="col l2">
-      <div class="card green lighten-2">
-        <div class="card-content">
-          <div class="card-title">
-            <strong>YOU</strong>
-          </div>
-
-          <table style="font-weight: bold">
-            <tr>
-              <td>Status</td>
-              <td colspan="2">Connected</td>
-            </tr>
-            <tr>
-              <td>
-                <span>Symbol</span>
-              </td>
-              <td id="mySymbol">{{ you.symbol }}</td>
-              <td >
-                <button
-                  id="changeSymbol"
-                  class="transparent tooltipped" {% if game.moves_left != 9 %}disabled{% endif %}
-                  data-position="right"
-                  data-tooltip="Change your symbol"
-                >
-                  <i class="material-icons" style="font-size: 22px">change_circle</i>
-                </button>
-              </td>
-            </tr>
-            <tr>
-              <td>Wins</td>
-              <td id="myWins" colspan="2">{{ you.wins }}</td>
-            </tr>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <div class="col l5 center-align center">
+     <div class="col l5 m12 center-align center">
       {% include 'games/snippets/p2p_game_board.html' with game=game%}
       <small class="text-lighten-2">Last game {{ game.updated }}</small><br>
       <small class="text-darken-4"><strong>Total Games: {{ game.total_games }}</strong></small>
     </div>
 
-    <div class="col l2">
-      <div class="card orange lighten-4">
-        <div class="card-content">
-          <div class="card-title">
-            <strong>{{ username }}</strong>
-          </div>
+    <div class="col l4 m12">
+      <div class="row">
+        <div class="col s6">
+          <div class="card green lighten-2">
+            <div class="card-content">
+              <div class="card-title">
+                <strong>YOU</strong>
+              </div>
 
-          <table style="font-weight: bold">
-            <tr>
-              <td>Status </td>
-              <td id="opponentStatus">Joining</td>
-            </tr>
-            <tr>
-              <td>Symbol</td>
-              <td id="opponentSymbol">{{ opponent.symbol }}</td>
-            </tr>
-            <tr>
-              <td>Wins</td>
-              <td id="opponentWins">{{ opponent.wins }}</td>
-            </tr>
-          </table>
+              <table style="font-weight: bold">
+                <tr>
+                  <td>Status</td>
+                  <td colspan="2">Connected</td>
+                </tr>
+                <tr>
+                  <td>
+                    <span>Symbol</span>
+                  </td>
+                  <td id="mySymbol">{{ you.symbol }}</td>
+                  <td >
+                    <div
+                      style="display: inline"
+                      class="tooltipped"
+                      data-position="right"
+                      data-tooltip="Change your symbol if game has not started"
+                    >
+                      <button
+                        id="changeSymbol"
+                        class="transparent " {% if game.moves_left != 9 %}disabled{% endif %}
+                      >
+                        <i class="material-icons" style="font-size: 22px">change_circle</i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Wins</td>
+                  <td id="myWins" colspan="2">{{ you.wins }}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="col s6">
+          <div class="card orange lighten-4">
+            <div class="card-content">
+              <div class="card-title">
+                <strong>{{ username }}</strong>
+              </div>
+
+              <table style="font-weight: bold">
+                <tr>
+                  <td>Status </td>
+                  <td id="opponentStatus">Joining</td>
+                </tr>
+                <tr>
+                  <td>Symbol</td>
+                  <td id="opponentSymbol">{{ opponent.symbol }}</td>
+                </tr>
+                <tr>
+                  <td>Wins</td>
+                  <td id="opponentWins">{{ opponent.wins }}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -156,7 +165,7 @@
       (function() {
         console.log('Game with player');
         const WS_RECONNECT_TIMEOUT = 2000;
-        const RELOAD_TIMEOUT = 3020;
+        const RELOAD_TIMEOUT = 3051;
         const CURRENT_USER = '{{ request.user.username }}';
         const OTHER_USER = '{{ username }}';
         let GAME_OVER = false;
@@ -339,8 +348,9 @@
         }
 
         const startNewGame = () => {
-          let counter = ['looks_one', 'looks_two', 'looks_3']
-          let idx = 0
+          let counter = [ 'looks_3', 'looks_two', 'looks_one', 'exposure_zero']
+          GAME.NEW_GAME.innerHTML = `<i class='material-icons'>${counter[0]}</i>`
+          let idx = 1
           setInterval(() => {
             console.log('IDX', idx);
             GAME.NEW_GAME.innerHTML = `<i class='material-icons'>${counter[idx]}</i>`

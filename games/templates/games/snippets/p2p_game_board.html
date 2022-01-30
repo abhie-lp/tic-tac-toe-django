@@ -2,23 +2,24 @@
   <div class="card-content">
     <div class="card-title">
       <span style="font-weight: 600; font-size: 34px">TIC TAC TOE</span>
-      <button
-        autocomplete="off"
-        class="teal tooltipped"
-        data-position="top"
-        data-tooltip="Start a new game"
-        id="newGame"
-        style="cursor: pointer" {% if game.winner is None %}disabled{% endif %}>
-        <i class="material-icons">restart_alt</i>
-      </button>
+      <div style="display: inline" class="tooltipped" data-position="top" data-tooltip="Start a new game on game over">
         <button
-          class="orange black-text disabled tooltipped"
-          data-position="top"
-          data-tooltip="Current game status- Play, Paused, Over"
+          autocomplete="off"
+          class="teal"
+          id="newGame"
+          style="cursor: pointer" {% if game.winner is None %}disabled{% endif %}>
+          <i class="material-icons">restart_alt</i>
+        </button>
+      </div>
+
+      <div style="display: inline" class="tooltipped" data-position="top" data-tooltip="Current status of game - In play | Paused | Over">
+        <button
+          class="orange black-text disabled "
           id="gameStatus"
           disabled>
           <i class="material-icons">{% if game.winner or game.moves_left == 0 %}stop{% else %}pause{% endif %}</i>
         </button>
+      </div>
     </div>
 
     {% for row in game.board %}
